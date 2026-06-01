@@ -115,6 +115,13 @@ input[type=range]{padding:0;accent-color:var(--accent)}
 .mini-lbl{font-size:11px;color:var(--muted);margin:8px 0 4px}
 .qr-preview-box{margin-top:8px;padding:10px;border-radius:12px;background:rgba(124,110,247,.08);border:1px solid rgba(124,110,247,.22);font-size:12px;color:#c8bfff;word-break:break-all;line-height:1.55}
 .qr-pill{display:inline-flex;align-items:center;gap:6px;border:1px solid rgba(124,110,247,.35);background:rgba(124,110,247,.14);border-radius:999px;padding:5px 9px;font-size:11px;color:#d9d3ff;margin-top:7px}
+.qr-preview-wrap{position:relative;background:#0a0a18;border-radius:14px;padding:10px;overflow:auto;margin-top:10px;display:none}
+.qr-preview-stage{position:relative;display:inline-block;line-height:0}
+.qr-preview-stage canvas{background:white;border-radius:8px;display:block;max-width:100%}
+.qr-drag-box{position:absolute;left:0;top:0;width:96px;background:#fff;border:1px solid rgba(0,0,0,.25);border-radius:8px;padding:6px;display:none;cursor:move;touch-action:none;box-shadow:0 6px 20px rgba(0,0,0,.24);outline:2px dashed rgba(124,110,247,.85);line-height:1}
+.qr-drag-box img{width:100%;height:auto;display:block;user-select:none;pointer-events:none}
+.qr-drag-label{font-size:9px;color:#111;text-align:center;margin-top:4px;line-height:1.15;word-break:break-all;user-select:none;pointer-events:none}
+.qr-resize-handle{position:absolute;right:-9px;bottom:-9px;width:18px;height:18px;border-radius:50%;background:var(--accent);border:2px solid white;cursor:nwse-resize;box-shadow:0 2px 10px rgba(0,0,0,.35)}
 .wm-preview-wrap{position:relative;background:#0a0a18;border-radius:14px;padding:10px;overflow:auto;margin-top:10px;display:none}
 .wm-preview-stage{position:relative;display:inline-block;line-height:0}
 .wm-preview-stage canvas{background:white;border-radius:8px;display:block;max-width:100%}
@@ -415,7 +422,26 @@ label input[type=checkbox]{width:auto;accent-color:var(--accent)}
       </div>
 
       <div class="qr-preview-box" id="qrPayloadPreview">Payload QR sẽ hiện ở đây.</div>
-      <div class="qr-pill">💡 Để trống ô trang áp dụng = đóng QR lên tất cả trang.</div>
+
+      <div class="mini-lbl">Preview kéo thả QR trên 1 trang đại diện</div>
+      <select id="qrPreviewFile" style="margin-top:8px"></select>
+      <div class="three" style="margin-top:8px">
+        <input id="qrPreviewPage" type="number" value="1" min="1" placeholder="Trang preview">
+        <button class="btn good" id="qrPreviewBtn" type="button">👁 Xem preview</button>
+        <label><input id="qrUsePreview" type="checkbox" checked> Dùng vị trí kéo</label>
+      </div>
+      <div class="qr-preview-wrap" id="qrPreviewWrap">
+        <div class="qr-preview-stage" id="qrPreviewStage">
+          <canvas id="qrPreviewCanvas"></canvas>
+          <div id="qrDragBox" class="qr-drag-box">
+            <img id="qrDragImg" alt="QR preview">
+            <div id="qrDragLabel" class="qr-drag-label"></div>
+            <div id="qrResize" class="qr-resize-handle"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="qr-pill">💡 Để trống ô trang áp dụng = đóng QR lên tất cả trang. Bật “Dùng vị trí kéo” để áp dụng vị trí/kích thước từ preview.</div>
     </div>
 
     <div class="section">
@@ -680,6 +706,7 @@ if(window.pdfjsLib)pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudfl
 
 let entries=[],undoStack=[],redoStack=[],currentTab='export',lastOCR='',signDataUrl='',drawnSignDataUrl='',wmLogoDataUrl='',editorObjects=[];
 let wmLogoCustom={enabled:false,cxPct:.5,cyPct:.5,wPct:.35};
+let qrCustom={enabled:false,cxPct:.86,cyPct:.84,sizePct:.13};
 const entryStore=new Map();
 let pmSortable=null;
 const $=id=>document.getElementById(id);
@@ -1053,7 +1080,7 @@ $('redoBtn').onclick=()=>{if(!redoStack.length)return;undoStack.push(JSON.string
 
 function refreshSelects(){
   const pdfs=entries.filter(e=>e.type==='pdf'&&!e.error);
-  ['pmFile','ocrFile','cmpA','cmpB','tableFile','edFile','splitFile','splitEachFile','signDirectFile','wmLogoPreviewFile'].forEach(id=>{
+  ['pmFile','ocrFile','cmpA','cmpB','tableFile','edFile','splitFile','splitEachFile','signDirectFile','wmLogoPreviewFile','qrPreviewFile'].forEach(id=>{
     const s=$(id);if(!s)return;
     const old=s.value;
     s.innerHTML=pdfs.map(e=>`<option value="${esc(e.id)}">${esc(e.file.name)} (${e.pages}tr)</option>`).join('');
@@ -1107,25 +1134,38 @@ async function decorate(doc,opts={}){
       const qrPayload = String(qrInfo.payload || '').trim();
       if(!qrPayload) throw new Error('Payload QR đang trống.');
 
-      const qrSize = Math.max(50, Math.min(180, +($('qrSize')?.value || 82)));
       const qrEcc = $('qrEcc')?.value || 'M';
-      const img = await doc.embedPng(await qrPng(qrPayload, { width: 360, ecc: qrEcc }));
+      const img = await doc.embedPng(await qrPng(qrPayload, { width: 420, ecc: qrEcc }));
 
       const pageInput = ($('qrPages')?.value || '').trim();
       const targetPages = pageInput ? new Set(parseRange(pageInput, pages.length)) : null;
       const showLabel = $('qrShowLabel')?.checked !== false;
       const rawLabel = showLabel ? String(qrInfo.label || '').trim() : '';
       const label = safe(rawLabel).slice(0, 42);
+      const usePreview = $('qrUsePreview')?.checked && qrCustom?.enabled;
 
       pages.forEach((p, idx)=>{
         if(targetPages && !targetPages.has(idx)) return;
 
         const {width, height} = p.getSize();
+        const qrSize = usePreview
+          ? Math.max(45, Math.min(190, width * Math.max(.04, Math.min(.35, qrCustom.sizePct || .13))))
+          : Math.max(50, Math.min(180, +($('qrSize')?.value || 82)));
         const boxPad = 8;
         const labelH = label ? 14 : 0;
         const boxW = qrSize + boxPad * 2;
         const boxH = qrSize + boxPad * 2 + labelH;
-        const q = pos($('qrPos')?.value || 'bottom-right', width, height, boxW, boxH, 42);
+        let q;
+        if(usePreview){
+          q = {
+            x: width * qrCustom.cxPct - boxW / 2,
+            y: height * (1 - qrCustom.cyPct) - boxH / 2
+          };
+          q.x = Math.max(10, Math.min(width - boxW - 10, q.x));
+          q.y = Math.max(10, Math.min(height - boxH - 10, q.y));
+        }else{
+          q = pos($('qrPos')?.value || 'bottom-right', width, height, boxW, boxH, 42);
+        }
 
         p.drawRectangle({
           x: q.x, y: q.y, width: boxW, height: boxH,
@@ -1529,55 +1569,157 @@ function updateQrUi(){
   try{
     const info=getQrPayload();
     if($('qrPayloadPreview'))$('qrPayloadPreview').textContent=info.payload||'Payload QR đang trống.';
+    renderQrDragBox();
   }catch(err){
     if($('qrPayloadPreview'))$('qrPayloadPreview').textContent='Không tạo được payload QR: '+err.message;
   }
 }
-async function qrPng(text, opts = {}) {
+function makeQrDataUrl(text, opts = {}) {
   const payload = String(text || 'PDF Fusion Smart Pro');
   const width = opts.width || 220;
   const ecc = opts.ecc || 'M';
 
-  // Hỗ trợ thư viện qrcode-generator: global là qrcode, không phải QRCode
-  if (typeof window.qrcode === 'function') {
-    if(window.qrcode.stringToBytesFuncs && window.qrcode.stringToBytesFuncs['UTF-8']){
-      window.qrcode.stringToBytes = window.qrcode.stringToBytesFuncs['UTF-8'];
-    }
-    const qr = window.qrcode(0, ecc);
-    qr.addData(payload, 'Byte');
-    qr.make();
-
-    const count = qr.getModuleCount();
-    const margin = 4;
-    const cell = Math.max(2, Math.floor(width / (count + margin * 2)));
-    const size = cell * (count + margin * 2);
-
-    const canvas = document.createElement('canvas');
-    canvas.width = size;
-    canvas.height = size;
-
-    const ctx = canvas.getContext('2d');
-    ctx.fillStyle = '#ffffff';
-    ctx.fillRect(0, 0, size, size);
-
-    ctx.fillStyle = '#000000';
-    for (let row = 0; row < count; row++) {
-      for (let col = 0; col < count; col++) {
-        if (qr.isDark(row, col)) {
-          ctx.fillRect((col + margin) * cell, (row + margin) * cell, cell, cell);
-        }
-      }
-    }
-
-    const dataUrl = canvas.toDataURL('image/png');
-    return Uint8Array.from(atob(dataUrl.split(',')[1]), c => c.charCodeAt(0));
+  if (typeof window.qrcode !== 'function') {
+    throw new Error('Thư viện QR chưa tải được. Hãy kiểm tra script qrcode-generator.');
+  }
+  if(window.qrcode.stringToBytesFuncs && window.qrcode.stringToBytesFuncs['UTF-8']){
+    window.qrcode.stringToBytes = window.qrcode.stringToBytesFuncs['UTF-8'];
   }
 
-  throw new Error('Thư viện QR chưa tải được. Hãy kiểm tra script qrcode-generator.');
+  const qr = window.qrcode(0, ecc);
+  qr.addData(payload, 'Byte');
+  qr.make();
+
+  const count = qr.getModuleCount();
+  const margin = 4;
+  const cell = Math.max(2, Math.floor(width / (count + margin * 2)));
+  const size = cell * (count + margin * 2);
+  const canvas = document.createElement('canvas');
+  canvas.width = size;
+  canvas.height = size;
+  const ctx = canvas.getContext('2d');
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(0, 0, size, size);
+  ctx.fillStyle = '#000000';
+  for (let row = 0; row < count; row++) {
+    for (let col = 0; col < count; col++) {
+      if (qr.isDark(row, col)) {
+        ctx.fillRect((col + margin) * cell, (row + margin) * cell, cell, cell);
+      }
+    }
+  }
+  return canvas.toDataURL('image/png');
 }
 
+async function qrPng(text, opts = {}) {
+  const dataUrl = makeQrDataUrl(text, opts);
+  return Uint8Array.from(atob(dataUrl.split(',')[1]), c => c.charCodeAt(0));
+}
+
+// ─── QR Preview kéo thả ─────────────────────────────────────────────────────
+async function loadQrPreview(){
+  const e=entries.find(x=>x.id===$('qrPreviewFile')?.value);
+  if(!e){alert('Chọn 1 file PDF để làm trang đại diện.');return}
+  const info=getQrPayload();
+  if(!String(info.payload||'').trim()){alert('Payload QR đang trống.');return}
+  const pdf=await pdfjsLib.getDocument({data:copyBytes(e)}).promise;
+  const pageNo=Math.max(1,Math.min(pdf.numPages,+$('qrPreviewPage').value||1));
+  $('qrPreviewPage').value=pageNo;
+  const page=await pdf.getPage(pageNo);
+  const wrap=$('qrPreviewWrap');
+  const maxW=Math.min(420,wrap.parentElement.clientWidth-30);
+  const viewport0=page.getViewport({scale:1});
+  const scale=Math.max(.25,Math.min(1.2,maxW/viewport0.width));
+  const vp=page.getViewport({scale});
+  const c=$('qrPreviewCanvas');
+  c.width=vp.width;c.height=vp.height;
+  await page.render({canvasContext:c.getContext('2d'),viewport:vp}).promise;
+  wrap.style.display='block';
+  renderQrDragBox();
+  status('Kéo QR để đổi vị trí, kéo nút tròn để phóng/thu.');
+}
+function renderQrDragBox(){
+  const c=$('qrPreviewCanvas'),box=$('qrDragBox'),img=$('qrDragImg'),lbl=$('qrDragLabel');
+  if(!c||!box||!img||!c.width)return;
+  let info;
+  try{info=getQrPayload()}catch{return}
+  const payload=String(info.payload||'').trim();
+  if(!payload)return;
+  img.src=makeQrDataUrl(payload,{width:300,ecc:$('qrEcc')?.value||'M'});
+  lbl.textContent=($('qrShowLabel')?.checked!==false && info.label)?String(info.label).slice(0,42):'';
+  const defaultPct=(+($('qrSize')?.value||78))/595;
+  const boxW=Math.max(54,c.width*(qrCustom.sizePct||defaultPct));
+  box.style.width=boxW+'px';
+  box.style.display='block';
+  requestAnimationFrame(()=>{
+    const bw=box.offsetWidth;
+    const bh=box.offsetHeight||bw;
+    const left=c.width*(qrCustom.cxPct??.86)-bw/2;
+    const top=c.height*(qrCustom.cyPct??.84)-bh/2;
+    box.style.left=Math.max(0,Math.min(c.width-bw,left))+'px';
+    box.style.top=Math.max(0,Math.min(c.height-bh,top))+'px';
+  });
+}
+function updateQrCustomFromBox(save=false){
+  const c=$('qrPreviewCanvas'),box=$('qrDragBox');
+  if(!c||!box||!c.width||box.style.display==='none')return;
+  const w=box.offsetWidth;
+  const h=box.offsetHeight||w;
+  qrCustom={enabled:true,cxPct:(box.offsetLeft+w/2)/c.width,cyPct:(box.offsetTop+h/2)/c.height,sizePct:w/c.width};
+  if($('qrUsePreview'))$('qrUsePreview').checked=true;
+  if($('qrSize'))$('qrSize').value=Math.round(qrCustom.sizePct*595);
+  if(save)autosave();
+}
+(function setupQrDrag(){
+  const box=$('qrDragBox'),handle=$('qrResize');
+  if(!box||!handle)return;
+  let mode='',startX=0,startY=0,startLeft=0,startTop=0,startW=0;
+  box.addEventListener('pointerdown',e=>{
+    if(e.target===handle)return;
+    mode='move';startX=e.clientX;startY=e.clientY;startLeft=box.offsetLeft;startTop=box.offsetTop;box.setPointerCapture?.(e.pointerId);
+  });
+  handle.addEventListener('pointerdown',e=>{
+    e.stopPropagation();mode='resize';startX=e.clientX;startY=e.clientY;startW=box.offsetWidth;box.setPointerCapture?.(e.pointerId);
+  });
+  box.addEventListener('pointermove',e=>{
+    if(!mode)return;
+    const c=$('qrPreviewCanvas');
+    if(!c.width)return;
+    if(mode==='move'){
+      const nx=startLeft+(e.clientX-startX);
+      const ny=startTop+(e.clientY-startY);
+      box.style.left=Math.max(0,Math.min(c.width-box.offsetWidth,nx))+'px';
+      box.style.top=Math.max(0,Math.min(c.height-box.offsetHeight,ny))+'px';
+    }else{
+      const next=Math.max(48,Math.min(c.width*.45,startW+(e.clientX-startX)));
+      box.style.width=next+'px';
+    }
+    updateQrCustomFromBox(false);
+  });
+  box.addEventListener('wheel',e=>{
+    e.preventDefault();
+    const c=$('qrPreviewCanvas');
+    if(!c.width)return;
+    const factor=e.deltaY<0?1.06:.94;
+    const oldW=box.offsetWidth;
+    const oldH=box.offsetHeight||oldW;
+    const next=Math.max(48,Math.min(c.width*.45,oldW*factor));
+    const cx=box.offsetLeft+oldW/2;
+    const cy=box.offsetTop+oldH/2;
+    box.style.width=next+'px';
+    requestAnimationFrame(()=>{
+      const nh=box.offsetHeight||next;
+      box.style.left=Math.max(0,Math.min(c.width-next,cx-next/2))+'px';
+      box.style.top=Math.max(0,Math.min(c.height-nh,cy-nh/2))+'px';
+      updateQrCustomFromBox(true);
+    });
+  },{passive:false});
+  ['pointerup','pointercancel','lostpointercapture'].forEach(ev=>box.addEventListener(ev,()=>{if(mode)updateQrCustomFromBox(true);mode=''}));
+})();
+$('qrPreviewBtn')?.addEventListener('click',loadQrPreview);
+
 // ─── Project ─────────────────────────────────────────────────────────────────
-const settingIds=['outputName','addPageNo','addBlank','wmEnable','wmText','wmSize','wmOpacity','wmOpacityRange','wmAngle','wmColor','wmPos','wmLogoEnable','wmLogoWidth','wmLogoOpacity','wmLogoOpacityRange','wmLogoPos','wmLogoPages','wmLogoPreviewPage','wmLogoUsePreview','qrEnable','qrMode','qrVerifyId','qrText','qrPos','qrSize','qrEcc','qrPages','qrShowLabel','signText','useDrawSign','signWidth','signPos','ocrLang','batchWm','batchNo','batchQr','batchSign'];
+const settingIds=['outputName','addPageNo','addBlank','wmEnable','wmText','wmSize','wmOpacity','wmOpacityRange','wmAngle','wmColor','wmPos','wmLogoEnable','wmLogoWidth','wmLogoOpacity','wmLogoOpacityRange','wmLogoPos','wmLogoPages','wmLogoPreviewPage','wmLogoUsePreview','qrEnable','qrMode','qrVerifyId','qrText','qrPos','qrSize','qrEcc','qrPages','qrShowLabel','qrPreviewPage','qrUsePreview','signText','useDrawSign','signWidth','signPos','ocrLang','batchWm','batchNo','batchQr','batchSign'];
 function collectSettings(){
   const settings={currentTab};
   for(const id of settingIds){const el=$(id);if(!el)continue;settings[id]=el.type==='checkbox'?el.checked:el.value}
@@ -1595,7 +1737,7 @@ function applySettings(settings={}){
 }
 function autosave(){
   try{
-    localStorage.setItem('pdfFusionPlusState',JSON.stringify({settings:collectSettings(),editorObjects,drawnSignDataUrl,wmLogoDataUrl,wmLogoCustom}));
+    localStorage.setItem('pdfFusionPlusState',JSON.stringify({settings:collectSettings(),editorObjects,drawnSignDataUrl,wmLogoDataUrl,wmLogoCustom,qrCustom}));
   }catch(err){log('Không thể autosave: localStorage đầy hoặc bị chặn.')}
 }
 setInterval(autosave,30000);
@@ -1609,6 +1751,7 @@ $('loadProject').onclick=()=>{
     drawnSignDataUrl=s.drawnSignDataUrl||'';
     wmLogoDataUrl=s.wmLogoDataUrl||'';
     wmLogoCustom=s.wmLogoCustom||wmLogoCustom;
+    qrCustom=s.qrCustom||qrCustom;
     restoreSavedSignatureUI();
     renderEd();
     status('✅ Đã tải cấu hình project.');
@@ -1621,7 +1764,7 @@ function resetFormDefaults(){
     outputName:'pdf-fusion',addPageNo:true,addBlank:false,
     wmEnable:false,wmText:'CONFIDENTIAL',wmSize:'42',wmOpacity:'0.18',wmOpacityRange:'0.18',wmAngle:'-35',wmColor:'#111111',wmPos:'center',
     wmLogoEnable:false,wmLogoWidth:'220',wmLogoOpacity:'0.18',wmLogoOpacityRange:'0.18',wmLogoPos:'center',wmLogoPages:'',wmLogoPreviewPage:'1',wmLogoUsePreview:true,
-    qrEnable:false,qrMode:'verify',qrVerifyId:'',qrText:'',qrPos:'bottom-right',qrSize:'78',qrEcc:'M',qrPages:'',qrShowLabel:true,
+    qrEnable:false,qrMode:'verify',qrVerifyId:'',qrText:'',qrPos:'bottom-right',qrSize:'78',qrEcc:'M',qrPages:'',qrShowLabel:true,qrPreviewPage:'1',qrUsePreview:true,
     signText:'',useDrawSign:false,signWidth:'150',signPos:'bottom-right',
     ocrLang:'vie+eng',batchWm:true,batchNo:true,batchQr:false,batchSign:false
   };
@@ -1634,12 +1777,13 @@ function resetAll(){
   if(!confirm('Reset toàn bộ dự án? File đã chọn, chữ ký, logo, watermark, OCR, editor và cấu hình lưu tạm sẽ bị xóa.'))return;
   entries=[];entryStore.clear();undoStack=[];redoStack=[];lastOCR='';signDataUrl='';drawnSignDataUrl='';wmLogoDataUrl='';editorObjects=[];
   wmLogoCustom={enabled:false,cxPct:.5,cyPct:.5,wPct:.35};
+  qrCustom={enabled:false,cxPct:.86,cyPct:.84,sizePct:.13};
   localStorage.removeItem('pdfFusionPlusState');
   resetFormDefaults();
   clearSig();restoreSavedSignatureUI();
   fileList.innerHTML='';downloads.innerHTML='';downloadEl.style.display='none';logEl.innerHTML='';$('ocrOut').value='';$('cmpOut').textContent='';$('pmGrid').innerHTML='';$('edOverlay').innerHTML='';
   const edCanvas=$('edCanvas');edCanvas.getContext('2d').clearRect(0,0,edCanvas.width,edCanvas.height);edCanvas.width=0;edCanvas.height=0;
-  $('wmLogoPreviewWrap').style.display='none';$('wmLogoBox').style.display='none';
+  $('wmLogoPreviewWrap').style.display='none';$('wmLogoBox').style.display='none';$('qrPreviewWrap').style.display='none';$('qrDragBox').style.display='none';
   renderFiles();refreshSelects();progress(0);status('✅ Đã reset toàn bộ dự án.');
   const exportTab=document.querySelector('.tab[data-tab="export"]');if(exportTab)exportTab.click();
 }
@@ -1685,7 +1829,7 @@ $('qrGenId')?.addEventListener('click',()=>{
   updateQrUi();
   autosave();
 });
-['qrMode','qrVerifyId','qrText','qrPos','qrSize','qrEcc','qrPages','qrShowLabel'].forEach(id=>{
+['qrMode','qrVerifyId','qrText','qrPos','qrSize','qrEcc','qrPages','qrShowLabel','qrPreviewPage','qrUsePreview'].forEach(id=>{
   const el=$(id);
   if(!el)return;
   el.addEventListener('input',()=>{updateQrUi(); autosave();});
