@@ -592,7 +592,7 @@ label input[type=checkbox]{width:auto;accent-color:var(--accent)}
         <button class="btn danger" id="clearProject">🗑 Xóa</button>
         <button class="btn warn" id="resetAllBtn">↺ Reset</button>
       </div>
-      <div class="hint" id="pwaHint">Autosave mỗi 30s. Service worker cần HTTPS hoặc localhost.</div>
+      <div class="hint" id="pwaHint">Autosave mỗi 30s. Cấu hình được lưu tạm trong trình duyệt của bạn.</div>
     </div>
   </div>
 
@@ -609,14 +609,15 @@ label input[type=checkbox]{width:auto;accent-color:var(--accent)}
 <footer class="footer">
   <div class="footer-brand">PDF Fusion Smart Pro</div>
   <div class="footer-links">
-    <button class="footer-link" data-info="guide">Hướng dẫn sử dụng</button>
-    <button class="footer-link" data-info="faq">FAQ</button>
-    <button class="footer-link" data-info="privacy">Bảo mật</button>
-    <button class="footer-link" data-info="terms">Điều khoản</button>
-    <button class="footer-link" data-info="notes">Lưu ý</button>
-    <button class="footer-link" data-info="disclaimer">Miễn trừ trách nhiệm</button>
+    <a class="footer-link" href="huong-dan-su-dung.html">Hướng dẫn sử dụng</a>
+    <a class="footer-link" href="faq.html">FAQ</a>
+    <a class="footer-link" href="bao-mat.html">Bảo mật</a>
+    <a class="footer-link" href="dieu-khoan.html">Điều khoản</a>
+    <a class="footer-link" href="luu-y.html">Lưu ý</a>
+    <a class="footer-link" href="mien-tru-trach-nhiem.html">Miễn trừ trách nhiệm</a>
   </div>
-  <div>Chạy trực tiếp trên trình duyệt · Không upload file lên server · Dùng tốt nhất trên localhost hoặc HTTPS</div>
+  <div>Chạy trực tiếp trên trình duyệt · Xử lý cục bộ trên thiết bị · Không upload file PDF lên server</div>
+  <div style="margin-top:8px;color:#5f5f86">Generated with Artificial Intelligence assistance · Human-reviewed interface and workflow</div>
 </footer>
 
 <div class="info-modal" id="infoModal" aria-hidden="true">
@@ -1486,38 +1487,22 @@ try{
   syncLogoOpacity(false);
 }catch{}
 
-const infoContents={
-  guide:{title:'Hướng dẫn sử dụng',html:`
-    <h3>1. Gộp PDF</h3>
-    <ul><li>Kéo thả PDF, DOCX hoặc ảnh vào vùng chọn file.</li><li>Sắp xếp thứ tự bằng biểu tượng ☰.</li><li>Nhập dải trang nếu cần, ví dụ <code>1-3,5</code>.</li><li>Bấm <b>Xuất PDF</b> để tải file kết quả.</li></ul>
-    <h3>2. Watermark</h3>
-    <ul><li>Watermark chữ có thể chỉnh màu, độ đậm nhạt, kích thước, góc và vị trí.</li><li>Watermark logo có thể preview trên một trang đại diện, kéo để di chuyển và kéo góc để phóng/thu.</li><li>Ô trang áp dụng để trống nghĩa là áp dụng cho tất cả trang.</li></ul>
-    <h3>3. Chữ ký</h3>
-    <ul><li>Vào tab Chữ ký, vẽ chữ ký, bấm lưu.</li><li>Có thể ký một trang hoặc tất cả trang.</li></ul>
-  `},
-  faq:{title:'FAQ',html:`
-    <h3>File có bị upload lên server không?</h3><p>Không. App xử lý trực tiếp trong trình duyệt của bạn.</p>
-    <h3>Tại sao PDF lớn bị chậm?</h3><p>PDF lớn cần nhiều RAM/CPU. Hãy thử chia nhỏ file hoặc xử lý ít trang hơn.</p>
-    <h3>OCR có chính xác tuyệt đối không?</h3><p>Không. OCR phụ thuộc vào độ nét, font chữ, ngôn ngữ và chất lượng scan.</p>
-    <h3>Có dùng offline được không?</h3><p>Có thể dùng tốt hơn khi đã chạy qua localhost/HTTPS và service worker đã cache tài nguyên cần thiết.</p>
-  `},
-  privacy:{title:'Bảo mật & quyền riêng tư',html:`
-    <p>PDF Fusion Smart Pro ưu tiên xử lý cục bộ trên trình duyệt. File của bạn không được gửi lên máy chủ của ứng dụng.</p>
-    <ul><li>File được đọc bằng JavaScript trong trình duyệt.</li><li>Một số cấu hình như chữ ký, logo, watermark có thể lưu trong <code>localStorage</code>.</li><li>Không nên dùng trên máy công cộng nếu tài liệu có nội dung nhạy cảm.</li><li>Nên bấm <b>Reset</b> sau khi xử lý tài liệu quan trọng.</li></ul>
-  `},
-  terms:{title:'Điều khoản sử dụng',html:`
-    <ul><li>Người dùng tự chịu trách nhiệm với file và nội dung được xử lý.</li><li>Không sử dụng công cụ để chỉnh sửa, giả mạo hoặc phát tán tài liệu trái pháp luật.</li><li>Các thư viện bên thứ ba có license riêng, cần kiểm tra trước khi phát hành thương mại.</li><li>Công cụ được cung cấp theo hiện trạng, có thể có lỗi hoặc giới hạn kỹ thuật.</li></ul>
-  `},
-  notes:{title:'Lưu ý khi sử dụng',html:`
-    <ul><li>Không mở bằng <code>file://</code>; nên chạy bằng <code>localhost</code> hoặc HTTPS.</li><li>PDF có mật khẩu, mã hóa hoặc cấu trúc đặc biệt có thể không đọc được.</li><li>Logo/chữ ký quá nặng có thể làm đầy <code>localStorage</code>.</li><li>Trước khi gửi tài liệu quan trọng, hãy mở file xuất ra và kiểm tra lại từng trang.</li></ul>
-  `},
-  disclaimer:{title:'Miễn trừ trách nhiệm',html:`
-    <p>Công cụ này hỗ trợ xử lý PDF tự động nhưng không đảm bảo kết quả luôn chính xác tuyệt đối trong mọi trường hợp.</p>
-    <ul><li>Người dùng cần tự kiểm tra file đầu ra trước khi sử dụng chính thức.</li><li>Tác giả không chịu trách nhiệm cho mất dữ liệu, sai định dạng, lỗi OCR, lỗi watermark hoặc thiệt hại phát sinh từ việc sử dụng công cụ.</li><li>Không dùng công cụ này làm căn cứ pháp lý duy nhất cho tài liệu quan trọng.</li></ul>
-  `}
-};
 function openInfo(key){
-  const data=infoContents[key];if(!data)return;
+  const welcome={
+    title:'Chào mừng đến với PDF Fusion Smart Pro',
+    html:`
+      <p><b>PDF Fusion Smart Pro</b> giúp bạn gộp, tách, ký, watermark, OCR, thêm QR và xử lý PDF ngay trên trình duyệt.</p>
+      <h3>Trước khi bắt đầu</h3>
+      <ul>
+        <li>File PDF của bạn được xử lý cục bộ trong trình duyệt.</li>
+        <li>Ứng dụng không chủ động upload tài liệu PDF lên server.</li>
+        <li>Với tài liệu quan trọng, hãy kiểm tra lại file đầu ra trước khi gửi hoặc sử dụng chính thức.</li>
+        <li>Sau khi xử lý tài liệu nhạy cảm, bạn có thể dùng nút <b>Reset</b> để xóa trạng thái tạm trong trình duyệt.</li>
+      </ul>
+      <p style="margin-top:10px;color:#a8a8cc">Bấm nút đóng để bắt đầu sử dụng.</p>
+    `
+  };
+  const data=welcome;
   $('infoTitle').textContent=data.title;
   $('infoBody').innerHTML=data.html;
   $('infoModal').classList.add('show');
@@ -1527,12 +1512,12 @@ function closeInfo(){
   $('infoModal').classList.remove('show');
   $('infoModal').setAttribute('aria-hidden','true');
 }
-document.querySelectorAll('[data-info]').forEach(btn=>btn.addEventListener('click',()=>openInfo(btn.dataset.info)));
+window.addEventListener('load',()=>setTimeout(()=>openInfo('welcome'),450));
 $('infoClose')?.addEventListener('click',closeInfo);
 $('infoModal')?.addEventListener('click',e=>{if(e.target===$('infoModal'))closeInfo()});
 document.addEventListener('keydown',e=>{if(e.key==='Escape')closeInfo()});
 
-if('serviceWorker' in navigator)navigator.serviceWorker.register('./pdf-fusion-sw.js').then(()=>log('Service worker đã đăng ký.')).catch(()=>log('Service worker cần HTTPS/localhost.'));
+if('serviceWorker' in navigator)navigator.serviceWorker.register('./pdf-fusion-sw.js').then(()=>log('Service worker đã đăng ký.')).catch(()=>log('Không thể đăng ký service worker trong môi trường hiện tại.'));
 </script>
 </body>
 </html>
