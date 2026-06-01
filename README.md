@@ -1,272 +1,406 @@
-# PDF Fusion Smart Pro Universal
+# PDF Fusion Smart Pro
 
-> Bộ công cụ PDF đa năng chạy hoàn toàn trong trình duyệt.
->
-> Gộp PDF, tách PDF, OCR tiếng Việt, chỉnh sửa trực tiếp trên trang PDF, ký điện tử, đóng dấu, watermark, quản lý trang bằng thumbnail, xuất Word, PWA Offline và lưu project bằng IndexedDB.
+**PDF Fusion Smart Pro** là công cụ xử lý PDF chạy trực tiếp trên trình duyệt, hỗ trợ gộp, tách, ký, watermark, OCR, QR, batch và chỉnh trang PDF mà không cần upload file lên server.
 
----
-
-## ✨ Tính năng chính
-
-### 📄 Xử lý PDF
-
-* Gộp nhiều PDF thành một file
-* Chọn phạm vi trang khi gộp
-* Xoay trang PDF
-* Thêm trang bìa
-* Tạo mục lục tự động
-* Thêm trang phân cách giữa các tài liệu
-* Đánh số trang
-* Chèn trang trắng tự động cho tài liệu có số trang lẻ
-
-### ✂️ Tách PDF
-
-* Tách từng trang thành file PDF riêng
-* Trích xuất khoảng trang
-* Chia PDF thành các cụm N trang
-
-### 🧩 Page Manager
-
-* Hiển thị thumbnail từng trang
-* Kéo thả để đổi thứ tự trang
-* Chọn nhiều trang
-* Xóa trang
-* Khôi phục trang
-* Xoay trang riêng lẻ
-* Xuất các trang được chọn
-
-### 🔎 OCR Tiếng Việt
-
-* OCR PDF scan bằng Tesseract.js
-* Hỗ trợ:
-
-  * Tiếng Việt
-  * English
-  * Tiếng Việt + English
-* Xuất kết quả OCR ra TXT
-
-### ✍️ Live PDF Editor
-
-* Render trang PDF thật
-* Thêm văn bản
-* Thêm stamp
-* Thêm logo
-* Thêm chữ ký
-* Kéo thả đối tượng trực tiếp trên trang
-
-### 🖋️ Chữ ký điện tử
-
-* Vẽ tay trên canvas
-* Tải ảnh chữ ký PNG/JPG
-* Chữ ký dạng text
-* Áp dụng:
-
-  * Tất cả trang
-  * Trang đầu
-  * Trang cuối
-  * Phạm vi tùy chọn
-
-### 🏷️ Watermark
-
-* Văn bản tùy chỉnh
-* Điều chỉnh:
-
-  * Kích thước
-  * Độ mờ
-  * Góc xoay
-
-### 📌 Đóng dấu hàng loạt
-
-Hỗ trợ biến động:
-
-* `{seq}` : số thứ tự
-* `{date}` : ngày hiện tại
-* `{page}` : số trang hiện tại
-* `{total}` : tổng số trang
-
-Ví dụ:
-
-```text
-Số CV: {seq}
-Ngày: {date}
-Mã hồ sơ: HS-{seq}
-```
-
-### 🖼️ Logo và hình ảnh
-
-* Chèn logo PNG/JPG
-* Điều chỉnh:
-
-  * Kích thước
-  * Vị trí
-  * Độ mờ
-  * Margin
-
-### 📋 PDF Form
-
-Tạo trường nhập liệu:
-
-* Text Box
-* Checkbox
-* Date Field
-
-### 📝 DOCX
-
-* Đọc DOCX bằng Mammoth.js
-* Gộp nhiều file Word
-* Xuất DOCX mới
-* Giữ nội dung tiếng Việt Unicode
-
-### 🇻🇳 Hỗ trợ tiếng Việt
-
-* Nhúng font Noto Sans Unicode
-* Giữ dấu tiếng Việt khi xuất PDF
-* Fallback khi không tải được font
-
-### 💾 Lưu Project
-
-Lưu toàn bộ:
-
-* Danh sách file
-* Cấu hình
-* Page Manager
-* OCR
-* Editor Objects
-
-vào IndexedDB.
-
-### 📱 Progressive Web App (PWA)
-
-* Cài như ứng dụng desktop/mobile
-* Hỗ trợ Offline
-* Service Worker Cache
-* Manifest chuẩn
+> Mục tiêu của dự án: tạo một công cụ PDF riêng tư, nhanh, dễ dùng và có thể chạy local/offline.
 
 ---
 
-## 🛠 Công nghệ sử dụng
+## Tính năng chính
 
-| Thư viện       | Chức năng          |
-| -------------- | ------------------ |
-| pdf-lib        | Xử lý PDF          |
-| pdf.js         | Render PDF         |
-| Tesseract.js   | OCR                |
-| Mammoth.js     | Đọc DOCX           |
-| docx.js        | Xuất DOCX          |
-| SortableJS     | Kéo thả            |
-| Fontkit        | Nhúng font Unicode |
-| IndexedDB      | Lưu Project        |
-| Service Worker | Offline Cache      |
+### Gộp PDF
 
----
+* Gộp nhiều file PDF thành một file duy nhất.
+* Kéo thả để sắp xếp thứ tự file.
+* Chọn dải trang cho từng file, ví dụ: `1-3,5,8-10`.
+* Xoay từng file trước khi xuất.
+* Tùy chọn thêm trang trắng sau file có số trang lẻ.
+* Tự động đánh số trang.
 
-## 🚀 Chạy dự án
+### Tách PDF
 
-### Cách 1: Local Server
+* Tách PDF theo dải trang.
+* Mỗi dải trang xuất thành một file PDF riêng.
+* Ví dụ:
 
-```bash
-python -m http.server 8000
+```txt
+1-2,4-5
 ```
 
-Sau đó mở:
+Kết quả:
 
-```text
-http://localhost:8000
+```txt
+file-trang-1-2.pdf
+file-trang-4-5.pdf
 ```
 
-### Cách 2: VS Code
+* Có chế độ tách nhanh: mỗi trang thành một file PDF riêng.
 
-Cài extension:
+### Watermark chữ
 
-```text
-Live Server
+* Bật/tắt watermark chữ.
+* Chỉnh nội dung watermark.
+* Chỉnh cỡ chữ.
+* Chỉnh góc xoay.
+* Chọn màu bằng color picker.
+* Chỉnh độ đậm/nhạt bằng thanh kéo.
+* Chọn vị trí watermark.
+* Mặc định nằm giữa trang.
+
+### Watermark logo
+
+* Upload logo PNG/JPG.
+* Bật/tắt watermark logo.
+* Chỉnh độ đậm/nhạt của logo.
+* Chỉnh kích thước logo.
+* Chọn vị trí mặc định.
+* Preview trên một trang PDF đại diện.
+* Kéo logo để di chuyển.
+* Kéo góc logo để phóng to/thu nhỏ.
+* Lăn chuột trên logo để zoom nhanh.
+* Áp dụng logo cho tất cả trang hoặc một số trang nhất định.
+
+Ví dụ áp dụng logo cho trang 1 đến 3 và trang 5:
+
+```txt
+1-3,5
 ```
 
-Sau đó:
+Nếu để trống ô trang áp dụng, logo sẽ được áp dụng cho tất cả trang.
 
-```text
-Right Click -> Open with Live Server
-```
+### Chữ ký
 
----
+* Vẽ chữ ký trực tiếp bằng chuột hoặc cảm ứng.
+* Chọn màu mực ký.
+* Chọn độ dày nét ký.
+* Undo nét ký.
+* Lưu chữ ký để đóng vào PDF.
+* Đóng chữ ký vào một trang hoặc tất cả trang.
+* Hỗ trợ chữ ký dạng text.
+* Hỗ trợ upload ảnh chữ ký/logo.
 
-## 📁 Cấu trúc
+### Page Manager
 
-```text
-project/
-│
-├── pdf-fusion-smart-pro-universal-pro-suite.html
-├── pdf-fusion-sw.js
-├── pdf-fusion-manifest.json
-│
-├── icons/
-│   ├── icon-192.png
-│   └── icon-512.png
-│
-└── screenshots/
-    └── main.png
-```
-
----
-
-## ⚠️ Giới hạn hiện tại
-
-### Mã hóa PDF
-
-Ứng dụng hiện:
-
-* KHÔNG mã hóa PDF thật
-* KHÔNG khóa in/copy thật
-
-Các tùy chọn mật khẩu hiện tại chỉ tạo cấu hình hoặc lệnh qpdf.
-
-Muốn bảo mật thực sự cần:
-
-* qpdf
-* Ghostscript
-* PDFium
-* Backend xử lý PDF
+* Xem thumbnail các trang PDF.
+* Chọn trang.
+* Xoay trang.
+* Xóa trang.
+* Khôi phục trang.
+* Kéo thả để đổi thứ tự trang.
+* Xuất riêng các trang đã chọn.
 
 ### OCR
 
-* Chạy hoàn toàn trong trình duyệt
-* PDF lớn có thể xử lý chậm
-* Tốn RAM với tài liệu nhiều trang
+* Nhận diện chữ trong PDF bằng Tesseract.js.
+* Hỗ trợ tiếng Việt và tiếng Anh.
+* Xuất kết quả OCR thành TXT.
+* Tạo PDF searchable bằng cách chèn text OCR ẩn vào PDF.
 
-### DOCX
+### QR Code
 
-Hiện mới ưu tiên:
+* Tạo QR code từ link hoặc mã xác minh.
+* Đóng QR vào PDF.
+* Chọn vị trí QR trên trang.
 
-* Nội dung văn bản
-* Unicode tiếng Việt
+### Batch Processor
 
-Chưa tái tạo hoàn toàn:
+* Xử lý nhiều PDF cùng lúc.
+* Xuất riêng từng file PDF.
+* Có thể áp dụng watermark, đánh số trang, QR và chữ ký cho từng file.
 
-* Header/Footer
-* Bảng phức tạp
-* Layout nâng cao
-* SmartArt
+### Công cụ phụ
 
----
-
-## 🔒 Quyền riêng tư
-
-Mọi xử lý được thực hiện trên thiết bị người dùng.
-
-Không có:
-
-* Upload file lên server
-* Theo dõi người dùng
-* Gửi dữ liệu ra bên ngoài
-
-Ngoại trừ việc tải thư viện và font từ CDN khi chưa có cache.
+* Extract text từ PDF sang CSV.
+* So sánh text giữa hai file PDF.
+* Live Editor để đặt text lên trang PDF.
+* Autosave cấu hình project vào localStorage.
+* Hỗ trợ PWA/service worker khi chạy qua HTTPS hoặc localhost.
 
 ---
 
-## 📄 Giấy phép
+## Quyền riêng tư
 
+PDF Fusion Smart Pro xử lý file trực tiếp trong trình duyệt.
+
+* File không được upload lên server.
+* File không rời khỏi máy người dùng.
+* Dữ liệu xử lý chủ yếu nằm trong RAM trình duyệt.
+* Một số cấu hình như watermark, chữ ký, vị trí logo có thể được lưu vào `localStorage`.
+
+Lưu ý: nếu lưu logo hoặc chữ ký dung lượng lớn vào `localStorage`, trình duyệt có thể báo đầy bộ nhớ lưu trữ.
+
+---
+
+## Công nghệ sử dụng
+
+Dự án sử dụng các thư viện frontend:
+
+* [pdf-lib](https://pdf-lib.js.org/) — tạo, chỉnh sửa, gộp và xuất PDF.
+* [PDF.js](https://mozilla.github.io/pdf.js/) — render PDF để preview, thumbnail và OCR.
+* [Tesseract.js](https://tesseract.projectnaptha.com/) — OCR trong trình duyệt.
+* [SortableJS](https://sortablejs.github.io/Sortable/) — kéo thả sắp xếp file/trang.
+* [QRCode](https://github.com/soldair/node-qrcode) — tạo QR code.
+* [Mammoth.js](https://github.com/mwilliamson/mammoth.js) — đọc text từ file `.docx`.
+
+---
+
+## Cách chạy local
+
+### 1. Clone hoặc tải project
+
+```bash
+git clone https://github.com/your-username/pdf-fusion-smart-pro.git
+cd pdf-fusion-smart-pro
+```
+
+Hoặc tạo thư mục thủ công:
+
+```txt
+pdf-fusion-smart-pro/
+  index.html
+  pdf-fusion-sw.js
+  README.md
+```
+
+### 2. Chạy local server
+
+Không nên mở trực tiếp bằng `file://`.
+
+Dùng Python:
+
+```bash
+python -m http.server 5500
+```
+
+Sau đó mở trình duyệt:
+
+```txt
+http://localhost:5500
+```
+
+---
+
+## Cấu trúc đề xuất
+
+Hiện tại có thể chạy dưới dạng một file HTML duy nhất. Khi dự án lớn hơn, nên tách thành cấu trúc sau:
+
+```txt
+pdf-fusion-smart-pro/
+  index.html
+  README.md
+  pdf-fusion-sw.js
+  src/
+    style.css
+    app.js
+    pdf-export.js
+    split.js
+    signature.js
+    watermark.js
+    ocr.js
+    page-manager.js
+    editor.js
+    storage.js
+```
+
+---
+
+## Service Worker mẫu
+
+Tạo file `pdf-fusion-sw.js`:
+
+```js
+const CACHE_NAME = 'pdf-fusion-smart-pro-v1';
+
+const ASSETS = [
+  './',
+  './index.html'
+];
+
+self.addEventListener('install', event => {
+  event.waitUntil(
+    caches.open(CACHE_NAME).then(cache => cache.addAll(ASSETS))
+  );
+  self.skipWaiting();
+});
+
+self.addEventListener('activate', event => {
+  event.waitUntil(
+    caches.keys().then(keys =>
+      Promise.all(
+        keys
+          .filter(key => key !== CACHE_NAME)
+          .map(key => caches.delete(key))
+      )
+    )
+  );
+  self.clients.claim();
+});
+
+self.addEventListener('fetch', event => {
+  event.respondWith(
+    caches.match(event.request).then(cached => cached || fetch(event.request))
+  );
+});
+```
+
+Service worker chỉ hoạt động khi chạy qua:
+
+```txt
+https://
+```
+
+hoặc:
+
+```txt
+localhost
+```
+
+---
+
+## Cách sử dụng nhanh
+
+### Gộp PDF
+
+1. Kéo thả file PDF vào vùng chọn file.
+2. Sắp xếp thứ tự file.
+3. Chọn dải trang nếu cần.
+4. Bật watermark, QR hoặc chữ ký nếu muốn.
+5. Bấm **Xuất PDF**.
+6. Tải file kết quả.
+
+### Tách PDF
+
+1. Vào tab **Tách PDF**.
+2. Chọn file PDF.
+3. Nhập dải trang, ví dụ:
+
+```txt
+1-3,5,8-10
+```
+
+4. Bấm **Xem trước** để kiểm tra.
+5. Bấm **Tách & Tải về**.
+
+### Thêm watermark logo
+
+1. Vào tab **Xuất**.
+2. Bật **Watermark logo**.
+3. Upload logo PNG/JPG.
+4. Chọn file preview và trang preview.
+5. Bấm **Xem preview**.
+6. Kéo logo đến vị trí mong muốn.
+7. Kéo góc logo để phóng to/thu nhỏ.
+8. Nhập trang áp dụng nếu chỉ muốn đóng logo lên một số trang.
+9. Bấm **Xuất PDF**.
+
+### Ký PDF
+
+1. Vào tab **Chữ ký**.
+2. Vẽ chữ ký.
+3. Bấm **Lưu chữ ký**.
+4. Chọn PDF cần ký.
+5. Chọn trang hoặc bật ký tất cả trang.
+6. Bấm **Đóng dấu ký & Xuất PDF**.
+
+---
+
+## Giới hạn hiện tại
+
+* OCR phụ thuộc vào chất lượng scan và độ rõ của ảnh.
+* PDF quá lớn có thể làm trình duyệt chậm hoặc treo tab.
+* Chuyển `.docx` sang PDF hiện chủ yếu là extract text, chưa giữ layout phức tạp.
+* PDF có mã hóa hoặc cấu trúc đặc biệt có thể không đọc được.
+* Watermark logo lưu trong `localStorage` có thể bị giới hạn dung lượng nếu ảnh quá lớn.
+* So sánh PDF hiện chủ yếu so sánh text, chưa so sánh hình ảnh/pixel.
+
+---
+
+## Roadmap
+
+### Giai đoạn 1
+
+* [x] Gộp PDF.
+* [x] Tách PDF.
+* [x] Chữ ký vẽ tay.
+* [x] Watermark chữ.
+* [x] Watermark logo.
+* [x] QR code.
+* [x] OCR cơ bản.
+* [x] Page Manager.
+* [x] Batch Processor.
+
+### Giai đoạn 2
+
+* [ ] Tách code thành nhiều module.
+* [ ] Thêm manifest PWA.
+* [ ] Thêm giao diện preview watermark đầy đủ.
+* [ ] Thêm nút tải tất cả file dạng ZIP.
+* [ ] Thêm thông báo lỗi đẹp thay cho `alert()`.
+* [ ] Thêm giới hạn dung lượng file và cảnh báo trước khi xử lý.
+* [ ] Thêm chế độ nén ảnh trong PDF.
+* [ ] Thêm import/export cấu hình project.
+
+### Giai đoạn 3
+
+* [ ] Deploy demo lên GitHub Pages, Netlify hoặc Vercel.
+* [ ] Thêm trang giới thiệu privacy.
+* [ ] Thêm test files mẫu.
+* [ ] Tối ưu hiệu năng cho PDF lớn.
+* [ ] Hỗ trợ dark/light theme.
+* [ ] Hỗ trợ đa ngôn ngữ.
+
+---
+
+## Gợi ý deploy
+
+Có thể deploy tĩnh bằng:
+
+* GitHub Pages
+* Netlify
+* Vercel
+* Cloudflare Pages
+
+Vì app chạy hoàn toàn trên frontend, không cần backend để dùng các chức năng cơ bản.
+
+---
+
+## Đóng góp
+
+Pull request và issue đều được chào đón.
+
+Khi báo lỗi, vui lòng ghi rõ:
+
+```txt
+Tính năng:
+File test:
+Bước thực hiện:
+Kết quả mong muốn:
+Kết quả thực tế:
+Console error:
+Trình duyệt:
+Hệ điều hành:
+```
+
+---
+
+## License
+
+Bạn có thể sử dụng MIT License cho dự án này.
+
+```txt
 MIT License
+```
 
-Copyright (c) 2026
+Nếu dự án dùng trong môi trường nội bộ hoặc thương mại riêng, hãy kiểm tra lại license của các thư viện bên thứ ba trước khi phát hành chính thức.
 
-PDF Fusion Smart Pro Universal
+---
+
+## Ghi chú
+
+PDF Fusion Smart Pro được thiết kế với ưu tiên:
+
+```txt
+Riêng tư · Nhanh · Không upload server · Dễ dùng · Chạy trong trình duyệt
+```
+
+Dự án phù hợp cho cá nhân, nhóm nhỏ, văn phòng, hoặc các workflow cần xử lý PDF nhanh mà không muốn gửi tài liệu lên dịch vụ bên ngoài.
