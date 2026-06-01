@@ -166,6 +166,7 @@ label input[type=checkbox]{width:auto;accent-color:var(--accent)}
 .editor-wrap canvas{background:white;max-width:100%;border-radius:8px;display:block}
 .obj{position:absolute;border:1px dashed rgba(124,110,247,.7);background:rgba(255,255,255,.88);
   color:#111;border-radius:7px;padding:5px 8px;cursor:move;user-select:none;font-size:13px}
+.obj:hover{outline:2px solid rgba(124,110,247,.45)}
 
 /* ── SIGNATURE PAD ───────────────────────────────────── */
 .sig-pad-wrap{position:relative;border-radius:14px;overflow:hidden;
@@ -197,7 +198,7 @@ label input[type=checkbox]{width:auto;accent-color:var(--accent)}
   border:1px solid rgba(124,110,247,.25)}
 .split-segment-icon{font-size:18px}
 .split-segment-info{flex:1}
-.split-segment-name{font-weight:600;font-size:13px}
+.split-segment-name{font-weight:600;font-size:13px;word-break:break-word}
 .split-segment-pages{font-size:11px;color:var(--muted);margin-top:1px}
 .range-hint{font-size:11px;color:var(--muted);margin-top:6px;line-height:1.6}
 .range-examples span{display:inline-block;background:rgba(124,110,247,.2);
@@ -504,7 +505,7 @@ label input[type=checkbox]{width:auto;accent-color:var(--accent)}
         <canvas id="edCanvas"></canvas>
         <div id="edOverlay"></div>
       </div>
-      <div class="hint">Object sẽ được đóng vào PDF khi xuất.</div>
+      <div class="hint">Object sẽ được đóng đúng file và đúng trang nguồn khi xuất. Nhấp đúp object để xóa.</div>
     </div>
 
     <div class="section">
@@ -535,6 +536,8 @@ const {PDFDocument,StandardFonts,rgb,degrees}=window.PDFLib||{};
 if(window.pdfjsLib)pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
 let entries=[],undoStack=[],redoStack=[],currentTab='export',lastOCR='',signDataUrl='',drawnSignDataUrl='',editorObjects=[];
+const entryStore=new Map();
+let pmSortable=null;
 const $=id=>document.getElementById(id);
 const fileList=$('fileList'),bar=$('bar'),statusEl=$('status'),logEl=$('log'),downloadEl=$('download'),downloads=$('downloads');
 const pageSize=[595.28,841.89];
@@ -542,24 +545,35 @@ const pageSize=[595.28,841.89];
 function log(s){const d=document.createElement('div');d.textContent='• '+s;logEl.appendChild(d);logEl.scrollTop=logEl.scrollHeight}
 function status(s){statusEl.textContent=s}
 function progress(n){bar.style.width=Math.max(0,Math.min(100,n))+'%'}
+function esc(s){return String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
 
 // ─── Signature Pad ──────────────────────────────────────────────────────────
 const sigCanvas=$('sigCanvas');
 const sigCtx=sigCanvas.getContext('2d');
 let sigDrawing=false,sigLastX=0,sigLastY=0,sigColor='#1a1a6e',sigSize=2,sigHistory=[];
 
-function initSigPad(){
+function paintSigBackground(){
+  sigCtx.fillStyle='#fff';
+  sigCtx.fillRect(0,0,sigCanvas.width,sigCanvas.height);
+}
+function initSigPad(preserve=true){
   const wrap=$('sigPadWrap');
-  const W=wrap.clientWidth||380;
+  const W=Math.max(260,wrap.clientWidth||380);
+  if(sigCanvas.width===W&&sigCanvas.height===180)return;
+  let old=null;
+  if(preserve&&sigCanvas.width&&sigCanvas.height){
+    old=document.createElement('canvas');
+    old.width=sigCanvas.width;old.height=sigCanvas.height;
+    old.getContext('2d').drawImage(sigCanvas,0,0);
+  }
   sigCanvas.width=W;
   sigCanvas.height=180;
-  clearSig();
+  paintSigBackground();
+  if(old)sigCtx.drawImage(old,0,0,old.width,old.height,0,0,W,180);
 }
 function clearSig(){
   sigCtx.clearRect(0,0,sigCanvas.width,sigCanvas.height);
-  // White background
-  sigCtx.fillStyle='#fff';
-  sigCtx.fillRect(0,0,sigCanvas.width,sigCanvas.height);
+  paintSigBackground();
   $('sigStatus').textContent='Dùng chuột hoặc ngón tay để ký';
 }
 function saveSigHistory(){
@@ -572,6 +586,49 @@ function getPos(e){
   if(e.touches){return{x:(e.touches[0].clientX-r.left)*sc,y:(e.touches[0].clientY-r.top)*sc}}
   return{x:(e.clientX-r.left)*sc,y:(e.clientY-r.top)*sc};
 }
+function sigHasInk(){
+  const img=sigCtx.getImageData(0,0,sigCanvas.width,sigCanvas.height).data;
+  for(let i=0;i<img.length;i+=4){
+    if(img[i]<245||img[i+1]<245||img[i+2]<245)return true;
+  }
+  return false;
+}
+function signatureToTransparentDataUrl(){
+  const W=sigCanvas.width,H=sigCanvas.height;
+  const src=sigCtx.getImageData(0,0,W,H);
+  const data=src.data;
+  let minX=W,minY=H,maxX=0,maxY=0,found=false;
+  for(let y=0;y<H;y++){
+    for(let x=0;x<W;x++){
+      const i=(y*W+x)*4;
+      const isInk=data[i]<245||data[i+1]<245||data[i+2]<245;
+      if(isInk){found=true;minX=Math.min(minX,x);minY=Math.min(minY,y);maxX=Math.max(maxX,x);maxY=Math.max(maxY,y)}
+    }
+  }
+  if(!found)return '';
+  const pad=10;
+  minX=Math.max(0,minX-pad);minY=Math.max(0,minY-pad);maxX=Math.min(W-1,maxX+pad);maxY=Math.min(H-1,maxY+pad);
+  const out=document.createElement('canvas');
+  out.width=maxX-minX+1;out.height=maxY-minY+1;
+  const octx=out.getContext('2d');
+  const cut=sigCtx.getImageData(minX,minY,out.width,out.height);
+  for(let i=0;i<cut.data.length;i+=4){
+    const nearWhite=cut.data[i]>245&&cut.data[i+1]>245&&cut.data[i+2]>245;
+    if(nearWhite)cut.data[i+3]=0;
+  }
+  octx.putImageData(cut,0,0);
+  return out.toDataURL('image/png');
+}
+function restoreSavedSignatureUI(){
+  if(drawnSignDataUrl){
+    $('sigPreviewImg').src=drawnSignDataUrl;
+    $('sigPreviewSection').style.display='block';
+    $('useDrawSign').checked=true;
+  }else{
+    $('sigPreviewSection').style.display='none';
+  }
+}
+
 sigCanvas.addEventListener('mousedown',e=>{saveSigHistory();sigDrawing=true;const p=getPos(e);sigLastX=p.x;sigLastY=p.y;sigCtx.beginPath();sigCtx.arc(p.x,p.y,sigSize/2,0,Math.PI*2);sigCtx.fillStyle=sigColor;sigCtx.fill();});
 sigCanvas.addEventListener('mousemove',e=>{if(!sigDrawing)return;const p=getPos(e);drawSigLine(sigLastX,sigLastY,p.x,p.y);sigLastX=p.x;sigLastY=p.y;});
 sigCanvas.addEventListener('mouseup',()=>{sigDrawing=false;$('sigStatus').textContent='Đã vẽ — nhấn "Lưu chữ ký" để sử dụng'});
@@ -586,7 +643,6 @@ function drawSigLine(x1,y1,x2,y2){
   sigCtx.lineCap='round';sigCtx.lineJoin='round';sigCtx.stroke();
 }
 
-// Color & thickness pickers
 document.querySelectorAll('.sig-color-dot').forEach(dot=>{
   dot.onclick=()=>{document.querySelectorAll('.sig-color-dot').forEach(d=>d.classList.remove('active'));dot.classList.add('active');sigColor=dot.dataset.color;}
 });
@@ -597,17 +653,19 @@ document.querySelectorAll('.thk-btn').forEach(btn=>{
 $('sigClear').onclick=()=>{sigHistory=[];clearSig()};
 $('sigUndo').onclick=()=>{if(sigHistory.length){sigCtx.putImageData(sigHistory.pop(),0,0)}};
 $('sigSave').onclick=()=>{
-  drawnSignDataUrl=sigCanvas.toDataURL('image/png');
+  if(!sigHasInk()){alert('Bạn chưa ký gì cả.');return}
+  drawnSignDataUrl=signatureToTransparentDataUrl();
   $('sigPreviewImg').src=drawnSignDataUrl;
   $('sigPreviewSection').style.display='block';
   $('useDrawSign').checked=true;
   $('sigStatus').textContent='✅ Đã lưu chữ ký!';
   status('✅ Đã lưu chữ ký vẽ tay');
+  autosave();
 };
-$('sigDelete').onclick=()=>{drawnSignDataUrl='';$('sigPreviewSection').style.display='none';$('useDrawSign').checked=false;clearSig();};
+$('sigDelete').onclick=()=>{drawnSignDataUrl='';$('sigPreviewSection').style.display='none';$('useDrawSign').checked=false;clearSig();autosave();};
 $('sigReSign').onclick=()=>{clearSig();sigHistory=[];$('sigStatus').textContent='Hãy ký lại...'};
-window.addEventListener('resize',initSigPad);
-setTimeout(initSigPad,100);
+window.addEventListener('resize',()=>initSigPad(true));
+setTimeout(()=>initSigPad(false),100);
 
 // Direct sign PDF
 $('signDirectBtn').onclick=async()=>{
@@ -615,6 +673,7 @@ $('signDirectBtn').onclick=async()=>{
   if(!e){alert('Chọn file PDF!');return}
   if(!drawnSignDataUrl){alert('Hãy vẽ và lưu chữ ký trước!');return}
   status('Đang đóng dấu ký...');
+  progress(5);
   const src=await PDFDocument.load(copyBytes(e),{ignoreEncryption:true});
   const doc=await PDFDocument.create();
   const allP=await doc.copyPages(src,[...Array(src.getPageCount()).keys()]);
@@ -624,7 +683,7 @@ $('signDirectBtn').onclick=async()=>{
   const sw=+$('signDirectWidth').value||160;
   const sc=sw/img.width;
   const signAll=$('signAllPages').checked;
-  const targetPage=+$('signDirectPage').value||1;
+  const targetPage=Math.max(1,Math.min(doc.getPageCount(),+$('signDirectPage').value||1));
   const pages=signAll?doc.getPages():[doc.getPage(targetPage-1)].filter(Boolean);
   pages.forEach(p=>{
     const {width,height}=p.getSize();
@@ -633,12 +692,12 @@ $('signDirectBtn').onclick=async()=>{
   });
   const bytes=await doc.save({useObjectStreams:true});
   extra(bytes,clean(e.file.name.replace(/\.pdf$/i,''))+'-signed.pdf','application/pdf');
+  progress(100);
   status('✅ Đã xuất PDF có chữ ký!');
 };
 
 // ─── Split PDF ───────────────────────────────────────────────────────────────
 function parseRangeSplit(str,total){
-  // Returns array of segments [{label,pages:[0-indexed]}]
   if(!str)return[];
   const segments=[];
   String(str).split(',').map(x=>x.trim()).filter(Boolean).forEach(p=>{
@@ -662,13 +721,14 @@ $('splitPreviewBtn').onclick=()=>{
   const prev=$('splitPreview');
   if(!segs.length){prev.style.display='none';alert('Dải trang không hợp lệ!');return}
   prev.style.display='block';
+  const base=clean(e.file.name.replace(/\.pdf$/i,''));
   prev.innerHTML='<div style="font-size:12px;color:var(--muted);margin-bottom:8px">Sẽ tạo '+segs.length+' file PDF:</div>'+
-    segs.map((s,i)=>`
+    segs.map(s=>`
       <div class="split-segment">
         <div class="split-segment-icon">📄</div>
         <div class="split-segment-info">
-          <div class="split-segment-name">${clean(e.file.name.replace(/\.pdf$/i,''))}-trang-${s.label}.pdf</div>
-          <div class="split-segment-pages">Trang ${s.pages.map(p=>p+1).join(', ')} • ${s.pages.length} trang</div>
+          <div class="split-segment-name">${esc(base+'-trang-'+s.label+'.pdf')}</div>
+          <div class="split-segment-pages">Trang ${esc(s.pages.map(p=>p+1).join(', '))} • ${s.pages.length} trang</div>
         </div>
       </div>
     `).join('');
@@ -720,16 +780,36 @@ $('splitEachBtn').onclick=async()=>{
 };
 
 // ─── Core helpers ────────────────────────────────────────────────────────────
-function snapshot(){undoStack.push(JSON.stringify(entries.map(e=>({id:e.id,name:e.file.name,type:e.type,pages:e.pages,range:e.range,rotate:e.rotate,enabled:e.enabled,pagePlan:e.pagePlan}))));if(undoStack.length>50)undoStack.shift();redoStack=[]}
-function restoreSnap(s){const data=JSON.parse(s);for(const st of data){const e=entries.find(x=>x.id===st.id);if(e)Object.assign(e,st)}renderFiles()}
+function getEntryState(){return entries.map(e=>({id:e.id,name:e.file.name,type:e.type,pages:e.pages,range:e.range,rotate:e.rotate,enabled:e.enabled,pagePlan:e.pagePlan,error:e.error}))}
+function snapshot(){undoStack.push(JSON.stringify(getEntryState()));if(undoStack.length>50)undoStack.shift();redoStack=[]}
+function restoreSnap(s){
+  const data=JSON.parse(s);
+  entries=data.map(st=>{
+    const e=entryStore.get(st.id);
+    if(!e)return null;
+    Object.assign(e,st);
+    return e;
+  }).filter(Boolean);
+  renderFiles();refreshSelects();autosave();
+}
 function parseRange(str,total){if(!str)return[...Array(total).keys()];const set=new Set();String(str).split(',').map(x=>x.trim()).filter(Boolean).forEach(p=>{const m=p.match(/^(\d+)(?:-(\d+))?$/);if(!m)return;let a=+m[1],b=+(m[2]||m[1]);if(a>b)[a,b]=[b,a];for(let i=Math.max(1,a);i<=Math.min(total,b);i++)set.add(i-1)});return[...set].sort((a,b)=>a-b)}
 function safe(s){return String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^\x20-\x7E\n]/g,'')}
 function clean(s){return safe(s).replace(/[\\/:*?"<>|]/g,'').replace(/\s+/g,'-').toLowerCase()||'file'}
 function size(n){return n<1048576?(n/1024).toFixed(1)+' KB':(n/1048576).toFixed(1)+' MB'}
 async function fileBytes(f){return new Uint8Array(await f.arrayBuffer())}
 function copyBytes(e){return e.bytes.slice()}
-function downloadBlob(data,name,type){const blob=data instanceof Blob?data:new Blob([data],{type});const url=URL.createObjectURL(blob);downloadEl.href=url;downloadEl.download=name;downloadEl.textContent='⬇ '+name;downloadEl.style.display='block'}
-function extra(data,name,type){const blob=data instanceof Blob?data:new Blob([data],{type});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=name;a.textContent='⬇ '+name;downloads.appendChild(a)}
+function downloadBlob(data,name,type){
+  const blob=data instanceof Blob?data:new Blob([data],{type});
+  const url=URL.createObjectURL(blob);
+  downloadEl.href=url;downloadEl.download=name;downloadEl.textContent='⬇ '+name;downloadEl.style.display='block';
+}
+function extra(data,name,type){
+  const blob=data instanceof Blob?data:new Blob([data],{type});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;a.download=name;a.textContent='⬇ '+name;
+  downloads.appendChild(a);
+}
 function pos(which,w,h,ow,oh,m=36){const map={'bottom-right':[w-ow-m,m],'bottom-left':[m,m],'top-right':[w-ow-m,h-oh-m],'top-left':[m,h-oh-m],'bottom-center':[(w-ow)/2,m]};const a=map[which]||map['bottom-right'];return{x:a[0],y:a[1]}}
 
 // ─── Files ───────────────────────────────────────────────────────────────────
@@ -740,9 +820,18 @@ async function addFiles(files){
     const type=/\.docx$/i.test(f.name)||/wordprocessingml/.test(f.type)?'docx':/image\//.test(f.type)?'image':'pdf';
     const e={id:crypto.randomUUID(),file:f,type,bytes:await fileBytes(f),pages:1,range:'',rotate:0,enabled:true,error:'',pagePlan:null,rawText:''};
     try{
-      if(type==='pdf'){const pdf=await PDFDocument.load(e.bytes.slice(),{ignoreEncryption:true});e.pages=pdf.getPageCount();e.pagePlan=[...Array(e.pages).keys()].map(i=>({src:i,rot:0,del:false,sel:false}))}
-      else if(type==='docx'&&window.mammoth){const r=await mammoth.extractRawText({arrayBuffer:e.bytes.slice().buffer});e.rawText=r.value||'';e.pages=Math.max(1,Math.ceil(e.rawText.length/2600))}
+      if(type==='pdf'){
+        const pdf=await PDFDocument.load(e.bytes.slice(),{ignoreEncryption:true});
+        e.pages=pdf.getPageCount();
+        e.pagePlan=[...Array(e.pages).keys()].map(i=>({src:i,rot:0,del:false,sel:false}));
+      }
+      else if(type==='docx'&&window.mammoth){
+        const r=await mammoth.extractRawText({arrayBuffer:e.bytes.slice().buffer});
+        e.rawText=r.value||'';
+        e.pages=Math.max(1,Math.ceil(e.rawText.length/2600));
+      }
     }catch(err){e.error='Không đọc được file';e.enabled=false}
+    entryStore.set(e.id,e);
     entries.push(e);
   }
   renderFiles();refreshSelects();autosave();
@@ -762,11 +851,11 @@ function renderFiles(){
       <div>
         <div style="display:flex;align-items:center;gap:8px">
           <span class="handle">☰</span>
-          <span class="file-name">${icon} ${e.file.name}</span>
+          <span class="file-name">${icon} ${esc(e.file.name)}</span>
         </div>
-        <div class="file-meta">${e.type.toUpperCase()} · ${size(e.file.size)} · ${e.pages} trang${e.error?' · ⚠ '+e.error:''}</div>
+        <div class="file-meta">${esc(e.type.toUpperCase())} · ${esc(size(e.file.size))} · ${e.pages} trang${e.error?' · ⚠ '+esc(e.error):''}</div>
         <div class="file-controls">
-          <input data-f="range" placeholder="Trang: 1-3,5" value="${e.range||''}">
+          <input data-f="range" placeholder="Trang: 1-3,5" value="${esc(e.range||'')}">
           <select data-f="rotate">
             <option>0°</option><option ${e.rotate==90?'selected':''}>90°</option>
             <option ${e.rotate==180?'selected':''}>180°</option><option ${e.rotate==270?'selected':''}>270°</option>
@@ -779,8 +868,8 @@ function renderFiles(){
       </div>
       <button class="btn danger" data-del style="align-self:start;padding:7px 11px;font-size:16px">×</button>`;
     fileList.appendChild(div);
-    div.querySelector('[data-del]').onclick=()=>{snapshot();entries=entries.filter(x=>x.id!==e.id);renderFiles();refreshSelects()};
-    div.querySelectorAll('[data-f]').forEach(inp=>inp.onchange=()=>{snapshot();const f=inp.dataset.f;if(f==='enabled')e.enabled=inp.value==='1';else if(f==='rotate')e.rotate=+inp.value.replace('°','');else e.range=inp.value;renderFiles()});
+    div.querySelector('[data-del]').onclick=()=>{snapshot();entries=entries.filter(x=>x.id!==e.id);renderFiles();refreshSelects();autosave()};
+    div.querySelectorAll('[data-f]').forEach(inp=>inp.onchange=()=>{snapshot();const f=inp.dataset.f;if(f==='enabled')e.enabled=inp.value==='1';else if(f==='rotate')e.rotate=+inp.value.replace('°','');else e.range=inp.value;renderFiles();autosave()});
   }
   $('fileCount').textContent=entries.length;
   $('pdfCount').textContent=pdf;
@@ -789,7 +878,7 @@ function renderFiles(){
   refreshSelects();
 }
 
-new Sortable(fileList,{animation:150,handle:'.handle',onEnd:()=>{snapshot();const ids=[...fileList.querySelectorAll('.file-item')].map(x=>x.dataset.id);entries=ids.map(id=>entries.find(e=>e.id===id)).filter(Boolean);renderFiles()}});
+new Sortable(fileList,{animation:150,handle:'.handle',onEnd:()=>{snapshot();const ids=[...fileList.querySelectorAll('.file-item')].map(x=>x.dataset.id);entries=ids.map(id=>entries.find(e=>e.id===id)).filter(Boolean);renderFiles();autosave()}});
 $('fileInput').onchange=e=>{addFiles([...e.target.files]);e.target.value=''};
 ['dragenter','dragover'].forEach(ev=>$('drop').addEventListener(ev,e=>{e.preventDefault();$('drop').classList.add('drag')}));
 ['dragleave','drop'].forEach(ev=>$('drop').addEventListener(ev,e=>{e.preventDefault();$('drop').classList.remove('drag')}));
@@ -801,22 +890,23 @@ document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>{
   document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('active',x===b));
   document.querySelectorAll('.panel').forEach(x=>x.classList.remove('show'));
   $('tab-'+currentTab).classList.add('show');
-  if(currentTab==='sign')setTimeout(initSigPad,50);
+  if(currentTab==='sign')setTimeout(()=>initSigPad(true),50);
+  autosave();
 });
 
 // Toolbar buttons
-$('azBtn').onclick=()=>{snapshot();entries.sort((a,b)=>a.file.name.localeCompare(b.file.name,'vi',{numeric:true}));renderFiles()};
-$('autoSortBtn').onclick=()=>{snapshot();const score=n=>/hop|contract|main/i.test(n)?1:/phu|appendix/i.test(n)?2:/bien|minutes/i.test(n)?3:/hoa|invoice/i.test(n)?4:9;entries.sort((a,b)=>score(a.file.name)-score(b.file.name)||a.file.name.localeCompare(b.file.name,'vi',{numeric:true}));renderFiles();status('Đã auto-sort.')};
-$('clearBtn').onclick=()=>{snapshot();entries=[];renderFiles();refreshSelects()};
-$('undoBtn').onclick=()=>{if(!undoStack.length)return;redoStack.push(JSON.stringify(entries.map(e=>({id:e.id,name:e.file.name,type:e.type,pages:e.pages,range:e.range,rotate:e.rotate,enabled:e.enabled,pagePlan:e.pagePlan}))));restoreSnap(undoStack.pop())};
-$('redoBtn').onclick=()=>{if(!redoStack.length)return;undoStack.push(JSON.stringify(entries.map(e=>({id:e.id,name:e.file.name,type:e.type,pages:e.pages,range:e.range,rotate:e.rotate,enabled:e.enabled,pagePlan:e.pagePlan}))));restoreSnap(redoStack.pop())};
+$('azBtn').onclick=()=>{snapshot();entries.sort((a,b)=>a.file.name.localeCompare(b.file.name,'vi',{numeric:true}));renderFiles();autosave()};
+$('autoSortBtn').onclick=()=>{snapshot();const score=n=>/hop|contract|main/i.test(n)?1:/phu|appendix/i.test(n)?2:/bien|minutes/i.test(n)?3:/hoa|invoice/i.test(n)?4:9;entries.sort((a,b)=>score(a.file.name)-score(b.file.name)||a.file.name.localeCompare(b.file.name,'vi',{numeric:true}));renderFiles();status('Đã auto-sort.');autosave()};
+$('clearBtn').onclick=()=>{snapshot();entries=[];renderFiles();refreshSelects();autosave()};
+$('undoBtn').onclick=()=>{if(!undoStack.length)return;redoStack.push(JSON.stringify(getEntryState()));restoreSnap(undoStack.pop())};
+$('redoBtn').onclick=()=>{if(!redoStack.length)return;undoStack.push(JSON.stringify(getEntryState()));restoreSnap(redoStack.pop())};
 
 function refreshSelects(){
   const pdfs=entries.filter(e=>e.type==='pdf'&&!e.error);
   ['pmFile','ocrFile','cmpA','cmpB','tableFile','edFile','splitFile','splitEachFile','signDirectFile'].forEach(id=>{
     const s=$(id);if(!s)return;
     const old=s.value;
-    s.innerHTML=pdfs.map(e=>`<option value="${e.id}">${e.file.name} (${e.pages}tr)</option>`).join('');
+    s.innerHTML=pdfs.map(e=>`<option value="${esc(e.id)}">${esc(e.file.name)} (${e.pages}tr)</option>`).join('');
     if(pdfs.some(e=>e.id===old))s.value=old;
   });
 }
@@ -834,7 +924,6 @@ async function decorate(doc,opts={}){
     const img=await doc.embedPng(await qrPng($('qrText').value||location.href));
     pages.forEach(p=>{const {width,height}=p.getSize();const q=pos($('qrPos').value,width,height,70,70);p.drawImage(img,{x:q.x,y:q.y,width:70,height:70})});
   }
-  // Signature (drawn or image or text)
   const useDrawn=($('useDrawSign').checked&&drawnSignDataUrl)||opts.sign;
   if(useDrawn&&drawnSignDataUrl){
     const imgBytes=Uint8Array.from(atob(drawnSignDataUrl.split(',')[1]),c=>c.charCodeAt(0));
@@ -842,14 +931,14 @@ async function decorate(doc,opts={}){
     const sw=+$('signWidth').value||150,sc=sw/img.width;
     pages.forEach(p=>{const {width,height}=p.getSize();const q=pos($('signPos').value,width,height,sw,img.height*sc);p.drawImage(img,{x:q.x,y:q.y,width:sw,height:img.height*sc,opacity:.92})});
   } else if(signDataUrl){
-    const img=signDataUrl.startsWith('data:image/jpeg')?await doc.embedJpg(Uint8Array.from(atob(signDataUrl.split(',')[1]),c=>c.charCodeAt(0))):await doc.embedPng(Uint8Array.from(atob(signDataUrl.split(',')[1]),c=>c.charCodeAt(0)));
+    const bytes=Uint8Array.from(atob(signDataUrl.split(',')[1]),c=>c.charCodeAt(0));
+    const img=signDataUrl.startsWith('data:image/jpeg')?await doc.embedJpg(bytes):await doc.embedPng(bytes);
     const sw=+$('signWidth').value||150,sc=sw/img.width;
     pages.forEach(p=>{const {width,height}=p.getSize();const q=pos($('signPos').value,width,height,sw,img.height*sc);p.drawImage(img,{x:q.x,y:q.y,width:sw,height:img.height*sc,opacity:.9})});
   } else if($('signText').value){
     const text=safe($('signText').value);
     pages.forEach(p=>{const {width,height}=p.getSize();const q=pos($('signPos').value,width,height,160,24);p.drawText(text,{x:q.x,y:q.y,size:18,font:bold,color:rgb(.05,.05,.05)})});
   }
-  await applyEditor(doc,font,bold);
 }
 
 // ─── Export ──────────────────────────────────────────────────────────────────
@@ -857,6 +946,7 @@ async function exportPDF(){
   const sel=entries.filter(e=>e.enabled&&!e.error);
   if(!sel.length){alert('Chưa có file hợp lệ');return}
   downloads.innerHTML='';
+  progress(0);
   const doc=await PDFDocument.create();
   for(let i=0;i<sel.length;i++){
     status('Đang xử lý '+sel[i].file.name);
@@ -874,13 +964,14 @@ async function exportPDF(){
 $('runBtn').onclick=exportPDF;
 
 // ─── Sign image upload ────────────────────────────────────────────────────────
-$('signImage').onchange=async e=>{const f=e.target.files[0];if(!f)return;signDataUrl=await new Promise(res=>{const r=new FileReader();r.onload=()=>res(r.result);r.readAsDataURL(f)});status('Đã tải ảnh chữ ký/logo')};
+$('signImage').onchange=async e=>{const f=e.target.files[0];if(!f)return;signDataUrl=await new Promise(res=>{const r=new FileReader();r.onload=()=>res(r.result);r.readAsDataURL(f)});status('Đã tải ảnh chữ ký/logo');autosave()};
 
 // ─── Page Manager ────────────────────────────────────────────────────────────
 $('pmLoad').onclick=loadPM;
 async function loadPM(){
   const e=entries.find(x=>x.id===$('pmFile').value);if(!e)return;
   const grid=$('pmGrid');grid.innerHTML='';
+  if(pmSortable){pmSortable.destroy();pmSortable=null;}
   const pdf=await pdfjsLib.getDocument({data:copyBytes(e)}).promise;
   e.pagePlan=e.pagePlan||[...Array(e.pages).keys()].map(i=>({src:i,rot:0,del:false,sel:false}));
   for(const item of e.pagePlan){
@@ -894,19 +985,21 @@ async function loadPM(){
     d.onclick=ev=>{if(!ev.shiftKey)e.pagePlan.forEach(p=>p.sel=false);item.sel=!item.sel;loadPM()};
     grid.appendChild(d);
   }
-  new Sortable(grid,{animation:140,onEnd:()=>{snapshot();const order=[...grid.children].map(x=>+x.dataset.src);e.pagePlan=order.map(i=>e.pagePlan.find(p=>p.src===i));loadPM()}});
+  pmSortable=new Sortable(grid,{animation:140,onEnd:()=>{snapshot();const order=[...grid.children].map(x=>+x.dataset.src);e.pagePlan=order.map(i=>e.pagePlan.find(p=>p.src===i));autosave();loadPM()}});
 }
-$('pmSelectAll').onclick=()=>{const e=entries.find(x=>x.id===$('pmFile').value);if(e){e.pagePlan.forEach(p=>p.sel=true);loadPM()}};
-$('pmRotate').onclick=()=>{snapshot();const e=entries.find(x=>x.id===$('pmFile').value);if(e){e.pagePlan.filter(p=>p.sel).forEach(p=>p.rot=(p.rot+90)%360);loadPM()}};
-$('pmDelete').onclick=()=>{snapshot();const e=entries.find(x=>x.id===$('pmFile').value);if(e){e.pagePlan.filter(p=>p.sel).forEach(p=>p.del=true);loadPM()}};
-$('pmRestore').onclick=()=>{snapshot();const e=entries.find(x=>x.id===$('pmFile').value);if(e){e.pagePlan.filter(p=>p.sel).forEach(p=>p.del=false);loadPM()}};
+$('pmSelectAll').onclick=()=>{const e=entries.find(x=>x.id===$('pmFile').value);if(e){e.pagePlan.forEach(p=>p.sel=true);loadPM();autosave()}};
+$('pmRotate').onclick=()=>{snapshot();const e=entries.find(x=>x.id===$('pmFile').value);if(e){e.pagePlan.filter(p=>p.sel).forEach(p=>p.rot=(p.rot+90)%360);loadPM();autosave()}};
+$('pmDelete').onclick=()=>{snapshot();const e=entries.find(x=>x.id===$('pmFile').value);if(e){e.pagePlan.filter(p=>p.sel).forEach(p=>p.del=true);loadPM();autosave()}};
+$('pmRestore').onclick=()=>{snapshot();const e=entries.find(x=>x.id===$('pmFile').value);if(e){e.pagePlan.filter(p=>p.sel).forEach(p=>p.del=false);loadPM();autosave()}};
 $('pmExtract').onclick=async()=>{
   const e=entries.find(x=>x.id===$('pmFile').value);if(!e)return;
   const plan=e.pagePlan.filter(p=>p.sel&&!p.del);
+  if(!plan.length){alert('Chọn ít nhất 1 trang.');return}
   const src=await PDFDocument.load(copyBytes(e),{ignoreEncryption:true}),out=await PDFDocument.create();
   const pg=await out.copyPages(src,plan.map(p=>p.src));
   pg.forEach((p,i)=>{if(plan[i].rot)p.setRotation(degrees(plan[i].rot));out.addPage(p)});
-  extra(await out.save(),clean(e.file.name)+'-selected.pdf','application/pdf');
+  extra(await out.save(),clean(e.file.name.replace(/\.pdf$/i,''))+'-selected.pdf','application/pdf');
+  status('✅ Đã xuất trang đã chọn');
 };
 
 // ─── OCR ─────────────────────────────────────────────────────────────────────
@@ -920,6 +1013,24 @@ async function ocrPages(e,pages){
     out.push({page:i,text:r.data.text||''});progress((k+1)/pages.length*100);
   }
   return out;
+}
+function drawInvisibleSearchText(page,text,font){
+  const cleanText=safe(text).replace(/\s+/g,' ').trim();
+  if(!cleanText)return;
+  let y=page.getHeight()-40;
+  let line='';
+  const words=cleanText.split(' ');
+  const draw=lineText=>{
+    if(!lineText||y<30)return;
+    page.drawText(lineText.slice(0,110),{x:30,y,size:7,font,color:rgb(1,1,1),opacity:.01});
+    y-=9;
+  };
+  for(const w of words){
+    const next=(line+' '+w).trim();
+    if(next.length>95){draw(line);line=w}else line=next;
+    if(y<30)break;
+  }
+  draw(line);
 }
 $('ocrRun').onclick=async()=>{
   const e=entries.find(x=>x.id===$('ocrFile').value);if(!e)return;
@@ -937,8 +1048,8 @@ $('ocrSearchable').onclick=async()=>{
   const copied=await doc.copyPages(src,[...Array(e.pages).keys()]);
   copied.forEach(p=>doc.addPage(p));
   const ocr=await ocrPages(e,idx),font=await doc.embedFont(StandardFonts.Helvetica);
-  ocr.forEach(r=>{const p=doc.getPage(r.page);if(!p)return;let y=p.getHeight()-40;safe(r.text).split(/\s+/).reduce((line,w)=>{if((line+' '+w).length>95){p.drawText(line,{x:30,y,size:7,font,color:rgb(1,1,1),opacity:.01});y-=9;return w}return(line+' '+w).trim()},'')});
-  extra(await doc.save(),clean(e.file.name)+'-searchable.pdf','application/pdf');
+  ocr.forEach(r=>{const p=doc.getPage(r.page);if(p)drawInvisibleSearchText(p,r.text,font)});
+  extra(await doc.save(),clean(e.file.name.replace(/\.pdf$/i,''))+'-searchable.pdf','application/pdf');
   status('✅ Đã xuất PDF searchable');
 };
 
@@ -946,6 +1057,7 @@ $('ocrSearchable').onclick=async()=>{
 $('batchRun').onclick=async()=>{
   downloads.innerHTML='';
   const pdfs=entries.filter(e=>e.enabled&&!e.error&&e.type==='pdf');
+  if(!pdfs.length){alert('Không có PDF hợp lệ.');return}
   for(let i=0;i<pdfs.length;i++){
     const e=pdfs[i],doc=await PDFDocument.create();
     await appendEntry(doc,e);
@@ -962,23 +1074,27 @@ $('cmpRun').onclick=async()=>{
   const a=entries.find(e=>e.id===$('cmpA').value),b=entries.find(e=>e.id===$('cmpB').value);if(!a||!b)return;
   let lines=[`A: ${a.file.name}`,`B: ${b.file.name}`,`Trang: ${a.pages} vs ${b.pages}`];
   const n=Math.min(a.pages,b.pages);
-  for(let i=0;i<n;i++){progress((i+1)/n*100);const ta=await pageText(a,i),tb=await pageText(b,i);if(ta!==tb)lines.push(`Khác ở trang ${i+1} (${ta.length} vs ${tb.length} ký tự)`)}
+  for(let i=0;i<n;i++){progress((i+1)/Math.max(1,n)*100);const ta=await pageText(a,i),tb=await pageText(b,i);if(ta!==tb)lines.push(`Khác ở trang ${i+1} (${ta.length} vs ${tb.length} ký tự)`)}
   if(a.pages!==b.pages)lines.push('Số trang khác nhau.');
-  if(lines.length===3)lines.push('Không thấy khác biệt.');
+  if(lines.length===3)lines.push('Không thấy khác biệt text.');
   $('cmpOut').textContent=lines.join('\n');status('✅ Compare xong');
 };
 $('tableRun').onclick=async()=>{
   const e=entries.find(x=>x.id===$('tableFile').value);if(!e)return;
   const pages=parseRange($('tablePages').value,e.pages);let rows=['page,text'];
-  for(const i of (pages.length?pages:[...Array(e.pages).keys()])){const txt=await pageText(e,i);txt.split(/\n| {2,}/).filter(Boolean).forEach(t=>rows.push(`${i+1},"${t.replaceAll('"','""')}"`))}
-  extra(new Blob([rows.join('\n')],{type:'text/csv;charset=utf-8'}),clean(e.file.name)+'-text.csv','text/csv');
+  const idx=pages.length?pages:[...Array(e.pages).keys()];
+  for(const i of idx){const txt=await pageText(e,i);txt.split(/\n| {2,}/).filter(Boolean).forEach(t=>rows.push(`${i+1},"${t.replaceAll('"','""')}"`))}
+  extra(new Blob([rows.join('\n')],{type:'text/csv;charset=utf-8'}),clean(e.file.name.replace(/\.pdf$/i,''))+'-text.csv','text/csv');
   status('✅ Xuất CSV xong');
 };
 
 // ─── Live Editor ─────────────────────────────────────────────────────────────
 $('edLoad').onclick=async()=>{
   const e=entries.find(x=>x.id===$('edFile').value);if(!e)return;
-  const pdf=await pdfjsLib.getDocument({data:copyBytes(e)}).promise,p=await pdf.getPage(+$('edPage').value||1),vp=p.getViewport({scale:1});
+  const pdf=await pdfjsLib.getDocument({data:copyBytes(e)}).promise;
+  const pageNo=Math.max(1,Math.min(pdf.numPages,+$('edPage').value||1));
+  $('edPage').value=pageNo;
+  const p=await pdf.getPage(pageNo),vp=p.getViewport({scale:1});
   const c=$('edCanvas');c.width=vp.width;c.height=vp.height;
   await p.render({canvasContext:c.getContext('2d'),viewport:vp}).promise;renderEd();
 };
@@ -988,22 +1104,30 @@ function renderEd(){
   editorObjects.filter(o=>o.file===$('edFile').value&&o.page===(+$('edPage').value||1)).forEach(o=>{
     const d=document.createElement('div');d.className='obj';d.style.left=o.x+'px';d.style.top=o.y+'px';d.textContent=o.text;
     let drag=false,dx=0,dy=0;
-    d.onpointerdown=e=>{drag=true;dx=e.offsetX;dy=e.offsetY};
-    d.onpointermove=e=>{if(!drag)return;const r=ov.getBoundingClientRect();o.x=Math.max(0,e.clientX-r.left-dx);o.y=Math.max(0,e.clientY-r.top-dy);d.style.left=o.x+'px';d.style.top=o.y+'px'};
-    d.onpointerup=()=>drag=false;ov.appendChild(d);
+    d.onpointerdown=e=>{drag=true;dx=e.offsetX;dy=e.offsetY;d.setPointerCapture?.(e.pointerId)};
+    d.onpointermove=e=>{if(!drag)return;const r=ov.getBoundingClientRect();o.x=Math.max(0,Math.min((c.width||595)-20,e.clientX-r.left-dx));o.y=Math.max(0,Math.min((c.height||842)-20,e.clientY-r.top-dy));d.style.left=o.x+'px';d.style.top=o.y+'px';o.cw=c.width||o.cw||595;o.ch=c.height||o.ch||842;autosave()};
+    d.onpointerup=()=>drag=false;
+    d.ondblclick=()=>{editorObjects=editorObjects.filter(x=>x!==o);autosave();renderEd()};
+    ov.appendChild(d);
   });
 }
-$('edAddText').onclick=()=>{editorObjects.push({file:$('edFile').value,page:+$('edPage').value||1,text:$('edText').value||'Text',x:60,y:60});renderEd()};
-async function applyEditor(doc,font,bold){
-  for(const o of editorObjects){
-    const p=doc.getPage(o.page-1);if(!p)continue;
-    const cw=$('edCanvas').width||595,ch=$('edCanvas').height||842;
-    const x=o.x*p.getWidth()/cw,y=p.getHeight()-o.y*p.getHeight()/ch-18;
-    p.drawText(safe(o.text),{x,y,size:14,font:bold,color:rgb(.05,.05,.05)});
+$('edAddText').onclick=()=>{
+  if(!$('edFile').value){alert('Chọn file PDF trước.');return}
+  const c=$('edCanvas');
+  editorObjects.push({file:$('edFile').value,page:+$('edPage').value||1,text:$('edText').value||'Text',x:60,y:60,cw:c.width||595,ch:c.height||842});
+  autosave();renderEd();
+};
+function applyEditorToPage(pdfPage,fileId,pageNo,bold){
+  const objs=editorObjects.filter(o=>o.file===fileId&&o.page===pageNo);
+  for(const o of objs){
+    const cw=o.cw||595,ch=o.ch||842;
+    const x=o.x*pdfPage.getWidth()/cw;
+    const y=pdfPage.getHeight()-o.y*pdfPage.getHeight()/ch-18;
+    pdfPage.drawText(safe(o.text),{x,y,size:14,font:bold,color:rgb(.05,.05,.05)});
   }
 }
 
-// ─── Append entry ────────────────────────────────────────────────────────────
+// ─── Append entry ───────────────────────────────────────────────────────────
 async function addImagePage(doc,e){
   const img=/jpe?g/i.test(e.file.type)?await doc.embedJpg(copyBytes(e)):await doc.embedPng(copyBytes(e));
   const p=doc.addPage(pageSize);const sc=Math.min((pageSize[0]-50)/img.width,(pageSize[1]-50)/img.height);
@@ -1015,8 +1139,15 @@ async function appendEntry(doc,e){
     let plan=e.pagePlan||[...Array(src.getPageCount()).keys()].map(i=>({src:i,rot:0,del:false}));
     if(e.range){const allow=new Set(parseRange(e.range,src.getPageCount()));plan=plan.filter(p=>allow.has(p.src))}
     plan=plan.filter(p=>!p.del);
+    if(!plan.length)return;
     const pages=await doc.copyPages(src,plan.map(p=>p.src));
-    pages.forEach((p,i)=>{const r=((p.getRotation().angle||0)+(+e.rotate||0)+(plan[i].rot||0))%360;if(r)p.setRotation(degrees(r));doc.addPage(p)});
+    const bold=await doc.embedFont(StandardFonts.HelveticaBold);
+    pages.forEach((p,i)=>{
+      const r=((p.getRotation().angle||0)+(+e.rotate||0)+(plan[i].rot||0))%360;
+      if(r)p.setRotation(degrees(r));
+      doc.addPage(p);
+      applyEditorToPage(p,e.id,plan[i].src+1,bold);
+    });
   } else if(e.type==='image') await addImagePage(doc,e);
   else{
     const font=await doc.embedFont(StandardFonts.Helvetica);let p=doc.addPage(pageSize),y=790;
@@ -1028,11 +1159,55 @@ async function appendEntry(doc,e){
 async function qrPng(text){const data=await QRCode.toDataURL(text||'PDF Fusion',{margin:1,width:220});return Uint8Array.from(atob(data.split(',')[1]),c=>c.charCodeAt(0))}
 
 // ─── Project ─────────────────────────────────────────────────────────────────
-function autosave(){localStorage.setItem('pdfFusionPlusState',JSON.stringify({settings:{outputName:$('outputName').value},editorObjects}))}
+const settingIds=['outputName','addPageNo','addBlank','wmEnable','wmText','wmSize','wmOpacity','wmAngle','qrEnable','qrText','qrPos','signText','useDrawSign','signWidth','signPos','ocrLang','batchWm','batchNo','batchQr','batchSign'];
+function collectSettings(){
+  const settings={currentTab};
+  for(const id of settingIds){const el=$(id);if(!el)continue;settings[id]=el.type==='checkbox'?el.checked:el.value}
+  return settings;
+}
+function applySettings(settings={}){
+  for(const id of settingIds){
+    const el=$(id);if(!el||!(id in settings))continue;
+    if(el.type==='checkbox')el.checked=!!settings[id];else el.value=settings[id];
+  }
+  if(settings.currentTab&&$('tab-'+settings.currentTab)){
+    const btn=document.querySelector(`.tab[data-tab="${settings.currentTab}"]`);
+    if(btn)btn.click();
+  }
+}
+function autosave(){
+  try{
+    localStorage.setItem('pdfFusionPlusState',JSON.stringify({settings:collectSettings(),editorObjects,drawnSignDataUrl}));
+  }catch(err){log('Không thể autosave: localStorage đầy hoặc bị chặn.')}
+}
 setInterval(autosave,30000);
-$('saveProject').onclick=autosave;
-$('loadProject').onclick=()=>{try{const s=JSON.parse(localStorage.getItem('pdfFusionPlusState')||'{}');Object.assign(editorObjects,s.editorObjects||[]);status('Đã tải cấu hình project.')}catch{}};
+$('saveProject').onclick=()=>{autosave();status('✅ Đã lưu cấu hình project.')};
+$('loadProject').onclick=()=>{
+  try{
+    const s=JSON.parse(localStorage.getItem('pdfFusionPlusState')||'{}');
+    applySettings(s.settings||{});
+    editorObjects.length=0;
+    editorObjects.push(...(s.editorObjects||[]));
+    drawnSignDataUrl=s.drawnSignDataUrl||'';
+    restoreSavedSignatureUI();
+    renderEd();
+    status('✅ Đã tải cấu hình project.');
+  }catch{status('Không tải được project.')}
+};
 $('clearProject').onclick=()=>{localStorage.removeItem('pdfFusionPlusState');status('Đã xóa project')};
+
+// Lưu nhẹ khi thay đổi setting, không lưu file gốc vì File/Uint8Array không nên nhét vào localStorage.
+document.querySelectorAll('input,select,textarea').forEach(el=>{
+  el.addEventListener('change',()=>autosave());
+});
+
+try{
+  const saved=JSON.parse(localStorage.getItem('pdfFusionPlusState')||'{}');
+  if(saved.settings)applySettings(saved.settings);
+  if(saved.editorObjects){editorObjects.length=0;editorObjects.push(...saved.editorObjects)}
+  drawnSignDataUrl=saved.drawnSignDataUrl||'';
+  restoreSavedSignatureUI();
+}catch{}
 
 if('serviceWorker' in navigator)navigator.serviceWorker.register('./pdf-fusion-sw.js').then(()=>log('Service worker đã đăng ký.')).catch(()=>log('Service worker cần HTTPS/localhost.'));
 </script>
