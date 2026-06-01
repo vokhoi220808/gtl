@@ -11,7 +11,6 @@
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
 <script src="https://unpkg.com/mammoth/mammoth.browser.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
 <style>
@@ -1103,73 +1102,69 @@ async function decorate(doc,opts={}){
   }
   if(opts.no||$('addPageNo').checked){pages.forEach((p,i)=>{const {width}=p.getSize();p.drawText(`${i+1}/${pages.length}`,{x:width/2-16,y:18,size:10,font,color:rgb(.25,.25,.25)})})}
   if(opts.qr || $('qrEnable').checked){
-  try{
-    const payload = getQrPayload();
-    const verifyId = $('verifyId')?.value?.trim() || '';
-    const qrSize = Math.max(50, Math.min(180, +($('qrSize')?.value || 82)));
+    try{
+      const qrInfo = getQrPayload();
+      const qrPayload = String(qrInfo.payload || '').trim();
+      if(!qrPayload) throw new Error('Payload QR đang trống.');
 
-    const img = await doc.embedPng(await qrPng(payload, { width: 360 }));
+      const qrSize = Math.max(50, Math.min(180, +($('qrSize')?.value || 82)));
+      const qrEcc = $('qrEcc')?.value || 'M';
+      const img = await doc.embedPng(await qrPng(qrPayload, { width: 360, ecc: qrEcc }));
 
-    pages.forEach((p, idx)=>{
-      const targetPages = ($('qrPages')?.value || '').trim()
-        ? new Set(parseRange($('qrPages').value, pages.length))
-        : null;
+      const pageInput = ($('qrPages')?.value || '').trim();
+      const targetPages = pageInput ? new Set(parseRange(pageInput, pages.length)) : null;
+      const showLabel = $('qrShowLabel')?.checked !== false;
+      const rawLabel = showLabel ? String(qrInfo.label || '').trim() : '';
+      const label = safe(rawLabel).slice(0, 42);
 
-      if(targetPages && !targetPages.has(idx)) return;
+      pages.forEach((p, idx)=>{
+        if(targetPages && !targetPages.has(idx)) return;
 
-      const {width, height} = p.getSize();
+        const {width, height} = p.getSize();
+        const boxPad = 8;
+        const labelH = label ? 14 : 0;
+        const boxW = qrSize + boxPad * 2;
+        const boxH = qrSize + boxPad * 2 + labelH;
+        const q = pos($('qrPos')?.value || 'bottom-right', width, height, boxW, boxH, 42);
 
-      const boxPad = 8;
-      const labelH = verifyId ? 12 : 0;
-      const boxW = qrSize + boxPad * 2;
-      const boxH = qrSize + boxPad * 2 + labelH;
-
-      const q = pos($('qrPos').value, width, height, boxW, boxH, 42);
-
-      p.drawRectangle({
-        x: q.x,
-        y: q.y,
-        width: boxW,
-        height: boxH,
-        color: rgb(1,1,1),
-        opacity: 0.96
-      });
-
-      p.drawRectangle({
-        x: q.x,
-        y: q.y,
-        width: boxW,
-        height: boxH,
-        borderColor: rgb(0.75,0.75,0.75),
-        borderWidth: 0.6,
-        opacity: 1
-      });
-
-      p.drawImage(img,{
-        x: q.x + boxPad,
-        y: q.y + boxPad + labelH,
-        width: qrSize,
-        height: qrSize
-      });
-
-      if(verifyId){
-        const idText = safe(verifyId).slice(0,32);
-        const textW = font.widthOfTextAtSize(idText, 6.5);
-        p.drawText(idText,{
-          x: q.x + Math.max(4, (boxW - textW) / 2),
-          y: q.y + 4,
-          size: 6.5,
-          font,
-          color: rgb(0.1,0.1,0.1)
+        p.drawRectangle({
+          x: q.x, y: q.y, width: boxW, height: boxH,
+          color: rgb(1,1,1), opacity: 0.96
         });
-      }
-    });
-  }catch(err){
-    console.error(err);
-    log('Không tạo được QR: '+err.message);
-    status('⚠ Không tạo được QR');
+        p.drawRectangle({
+          x: q.x, y: q.y, width: boxW, height: boxH,
+          borderColor: rgb(0.72,0.72,0.72), borderWidth: 0.7, opacity: 1
+        });
+        p.drawImage(img,{
+          x: q.x + boxPad,
+          y: q.y + boxPad + labelH,
+          width: qrSize,
+          height: qrSize
+        });
+
+        if(label){
+          let textSize = 6.8;
+          let text = label;
+          while(font.widthOfTextAtSize(text, textSize) > boxW - 8 && text.length > 8){
+            text = text.slice(0, -2);
+          }
+          if(text !== label) text = text.slice(0, -1) + '…';
+          const textW = font.widthOfTextAtSize(text, textSize);
+          p.drawText(text,{
+            x: q.x + Math.max(4, (boxW - textW) / 2),
+            y: q.y + 4,
+            size: textSize,
+            font,
+            color: rgb(0.1,0.1,0.1)
+          });
+        }
+      });
+    }catch(err){
+      console.error(err);
+      log('Không tạo được QR: '+err.message);
+      status('⚠ Không tạo được QR');
+    }
   }
-}
   const useDrawn=($('useDrawSign').checked&&drawnSignDataUrl)||opts.sign;
   if(useDrawn&&drawnSignDataUrl){
     const imgBytes=Uint8Array.from(atob(drawnSignDataUrl.split(',')[1]),c=>c.charCodeAt(0));
@@ -1541,10 +1536,14 @@ function updateQrUi(){
 async function qrPng(text, opts = {}) {
   const payload = String(text || 'PDF Fusion Smart Pro');
   const width = opts.width || 220;
+  const ecc = opts.ecc || 'M';
 
   // Hỗ trợ thư viện qrcode-generator: global là qrcode, không phải QRCode
   if (typeof window.qrcode === 'function') {
-    const qr = window.qrcode(0, 'M');
+    if(window.qrcode.stringToBytesFuncs && window.qrcode.stringToBytesFuncs['UTF-8']){
+      window.qrcode.stringToBytes = window.qrcode.stringToBytesFuncs['UTF-8'];
+    }
+    const qr = window.qrcode(0, ecc);
     qr.addData(payload, 'Byte');
     qr.make();
 
@@ -1681,6 +1680,17 @@ try{
   updateQrUi();
 }catch{}
 updateQrUi();
+$('qrGenId')?.addEventListener('click',()=>{
+  $('qrVerifyId').value = generateVerifyId();
+  updateQrUi();
+  autosave();
+});
+['qrMode','qrVerifyId','qrText','qrPos','qrSize','qrEcc','qrPages','qrShowLabel'].forEach(id=>{
+  const el=$(id);
+  if(!el)return;
+  el.addEventListener('input',()=>{updateQrUi(); autosave();});
+  el.addEventListener('change',()=>{updateQrUi(); autosave();});
+});
 
 function openInfo(key){
   const welcome={
