@@ -1,4 +1,3 @@
-<img width="660" height="495" alt="image" src="https://github.com/user-attachments/assets/878b5fa1-2e8b-435c-aee3-47a6ac73c737" /># PDF Fusion Smart Pro
 
 **PDF Fusion Smart Pro** là công cụ xử lý PDF chạy trực tiếp trên trình duyệt, hỗ trợ gộp, tách, ký, watermark, OCR, QR, batch và chỉnh trang PDF mà không cần upload file lên server.
 
