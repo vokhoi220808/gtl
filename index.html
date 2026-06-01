@@ -416,7 +416,7 @@ label input[type=checkbox]{width:auto;accent-color:var(--accent)}
           <option value="top-left">Trên trái</option>
           <option value="center">Giữa trang</option>
         </select>
-        <input id="qrSize" type="number" min="45" max="180" value="78" placeholder="Kích thước QR">
+        <input id="qrSize" type="number" min="24" max="220" value="78" placeholder="Kích thước QR">
         <select id="qrEcc">
           <option value="M" selected>Lỗi M</option>
           <option value="Q">Lỗi Q</option>
@@ -1225,8 +1225,8 @@ async function decorate(doc,opts={}){
 
         const {width, height} = p.getSize();
         const qrSize = usePreview
-          ? Math.max(45, Math.min(190, width * Math.max(.04, Math.min(.35, qrCustom.sizePct || .13))))
-          : Math.max(50, Math.min(180, +($('qrSize')?.value || 82)));
+          ? Math.max(24, Math.min(220, width * Math.max(.025, Math.min(.35, qrCustom.sizePct || .13))))
+          : Math.max(24, Math.min(220, +($('qrSize')?.value || 82)));
         const boxPad = 8;
         const labelH = label ? 14 : 0;
         const boxW = qrSize + boxPad * 2;
@@ -1756,7 +1756,7 @@ function renderQrDragBox(){
   img.src=makeQrDataUrl(payload,{width:300,ecc:$('qrEcc')?.value||'M'});
   lbl.textContent=($('qrShowLabel')?.checked!==false && info.label)?String(info.label).slice(0,42):'';
   const defaultPct=(+($('qrSize')?.value||78))/595;
-  const boxW=Math.max(54,c.width*(qrCustom.sizePct||defaultPct));
+  const boxW=Math.max(28,c.width*(qrCustom.sizePct||defaultPct));
   box.style.width=boxW+'px';
   box.style.display='block';
   requestAnimationFrame(()=>{
@@ -1775,8 +1775,31 @@ function updateQrCustomFromBox(save=false){
   const h=box.offsetHeight||w;
   qrCustom={enabled:true,cxPct:(box.offsetLeft+w/2)/c.width,cyPct:(box.offsetTop+h/2)/c.height,sizePct:w/c.width};
   if($('qrUsePreview'))$('qrUsePreview').checked=true;
-  if($('qrSize'))$('qrSize').value=Math.round(qrCustom.sizePct*595);
+  if($('qrSize'))$('qrSize').value=Math.max(24,Math.round(qrCustom.sizePct*595));
   if(save)autosave();
+}
+function applyQrSizeInputToPreview(save=false){
+  const c=$('qrPreviewCanvas'),box=$('qrDragBox'),input=$('qrSize');
+  if(!input)return;
+  const pdfSize=Math.max(24,Math.min(220,+input.value||78));
+  input.value=Math.round(pdfSize);
+  if(!c||!box||!c.width||box.style.display==='none'){
+    qrCustom={...(qrCustom||{}),enabled:false,sizePct:pdfSize/595};
+    if(save)autosave();
+    return;
+  }
+  const oldW=box.offsetWidth||c.width*(qrCustom.sizePct||pdfSize/595);
+  const oldH=box.offsetHeight||oldW;
+  const next=Math.max(28,Math.min(c.width*.45,c.width*(pdfSize/595)));
+  const cx=box.offsetLeft+oldW/2;
+  const cy=box.offsetTop+oldH/2;
+  box.style.width=next+'px';
+  requestAnimationFrame(()=>{
+    const nh=box.offsetHeight||next;
+    box.style.left=Math.max(0,Math.min(c.width-next,cx-next/2))+'px';
+    box.style.top=Math.max(0,Math.min(c.height-nh,cy-nh/2))+'px';
+    updateQrCustomFromBox(save);
+  });
 }
 (function setupQrDrag(){
   const box=$('qrDragBox'),handle=$('qrResize');
@@ -1799,7 +1822,7 @@ function updateQrCustomFromBox(save=false){
       box.style.left=Math.max(0,Math.min(c.width-box.offsetWidth,nx))+'px';
       box.style.top=Math.max(0,Math.min(c.height-box.offsetHeight,ny))+'px';
     }else{
-      const next=Math.max(48,Math.min(c.width*.45,startW+(e.clientX-startX)));
+      const next=Math.max(28,Math.min(c.width*.45,startW+(e.clientX-startX)));
       box.style.width=next+'px';
     }
     updateQrCustomFromBox(false);
@@ -1811,7 +1834,7 @@ function updateQrCustomFromBox(save=false){
     const factor=e.deltaY<0?1.06:.94;
     const oldW=box.offsetWidth;
     const oldH=box.offsetHeight||oldW;
-    const next=Math.max(48,Math.min(c.width*.45,oldW*factor));
+    const next=Math.max(28,Math.min(c.width*.45,oldW*factor));
     const cx=box.offsetLeft+oldW/2;
     const cy=box.offsetTop+oldH/2;
     box.style.width=next+'px';
@@ -1939,12 +1962,14 @@ $('qrGenId')?.addEventListener('click',()=>{
   updateQrUi();
   autosave();
 });
-['qrMode','qrVerifyId','qrText','qrPos','qrSize','qrEcc','qrPages','qrShowLabel','qrPreviewPage','qrUsePreview'].forEach(id=>{
+['qrMode','qrVerifyId','qrText','qrPos','qrEcc','qrPages','qrShowLabel','qrPreviewPage','qrUsePreview'].forEach(id=>{
   const el=$(id);
   if(!el)return;
   el.addEventListener('input',()=>{updateQrUi(); autosave();});
   el.addEventListener('change',()=>{updateQrUi(); autosave();});
 });
+$('qrSize')?.addEventListener('input',()=>{applyQrSizeInputToPreview(false); updateQrUi(); autosave();});
+$('qrSize')?.addEventListener('change',()=>{applyQrSizeInputToPreview(true); updateQrUi(); autosave();});
 
 function openInfo(key){
   const welcome={
