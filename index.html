@@ -219,6 +219,24 @@ label input[type=checkbox]{width:auto;accent-color:var(--accent)}
   border-radius:12px;padding:10px;max-height:180px;overflow:auto;font-size:12px}
 .hint{font-size:12px;color:var(--muted);margin-top:7px;line-height:1.5}
 
+/* Footer + info modal */
+.footer{margin-top:24px;padding:18px 10px;text-align:center;color:var(--muted);font-size:12px}
+.footer-brand{font-family:'Syne',sans-serif;font-weight:800;color:#c8bfff;margin-bottom:10px}
+.footer-links{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-bottom:10px}
+.footer-link{border:1px solid var(--border);background:rgba(255,255,255,.05);color:var(--muted);border-radius:999px;padding:7px 11px;cursor:pointer;font-size:12px;font-family:'DM Sans',sans-serif;transition:.2s}
+.footer-link:hover{color:var(--text);border-color:var(--border2);background:rgba(255,255,255,.09)}
+.info-modal{position:fixed;inset:0;background:rgba(0,0,0,.62);backdrop-filter:blur(10px);z-index:20;display:none;align-items:center;justify-content:center;padding:18px}
+.info-modal.show{display:flex}
+.info-card{width:min(720px,100%);max-height:82vh;overflow:auto;background:rgba(15,15,26,.96);border:1px solid var(--border2);border-radius:22px;padding:20px;box-shadow:0 20px 80px rgba(0,0,0,.45)}
+.info-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px}
+.info-head h2{font-family:'Syne',sans-serif;font-size:20px;color:#fff}
+.info-close{border:0;background:rgba(255,255,255,.1);color:#fff;border-radius:12px;width:36px;height:36px;cursor:pointer;font-size:20px}
+.info-body{color:#d7d7ef;font-size:14px;line-height:1.7}
+.info-body h3{font-family:'Syne',sans-serif;color:#c8bfff;font-size:15px;margin:14px 0 6px}
+.info-body ul{padding-left:20px;margin:8px 0}
+.info-body li{margin:4px 0}
+.info-body code{background:rgba(124,110,247,.18);border:1px solid rgba(124,110,247,.25);border-radius:6px;padding:1px 6px;color:#c8bfff}
+
 /* Scrollbar */
 ::-webkit-scrollbar{width:5px;height:5px}
 ::-webkit-scrollbar-track{background:transparent}
@@ -572,6 +590,7 @@ label input[type=checkbox]{width:auto;accent-color:var(--accent)}
         <button class="btn good" id="saveProject">💾 Lưu</button>
         <button class="btn" id="loadProject">📂 Tải</button>
         <button class="btn danger" id="clearProject">🗑 Xóa</button>
+        <button class="btn warn" id="resetAllBtn">↺ Reset</button>
       </div>
       <div class="hint" id="pwaHint">Autosave mỗi 30s. Service worker cần HTTPS hoặc localhost.</div>
     </div>
@@ -586,6 +605,29 @@ label input[type=checkbox]{width:auto;accent-color:var(--accent)}
   <div id="log" class="log-box"></div>
 </div>
 </div><!-- /layout -->
+
+<footer class="footer">
+  <div class="footer-brand">PDF Fusion Smart Pro</div>
+  <div class="footer-links">
+    <button class="footer-link" data-info="guide">Hướng dẫn sử dụng</button>
+    <button class="footer-link" data-info="faq">FAQ</button>
+    <button class="footer-link" data-info="privacy">Bảo mật</button>
+    <button class="footer-link" data-info="terms">Điều khoản</button>
+    <button class="footer-link" data-info="notes">Lưu ý</button>
+    <button class="footer-link" data-info="disclaimer">Miễn trừ trách nhiệm</button>
+  </div>
+  <div>Chạy trực tiếp trên trình duyệt · Không upload file lên server · Dùng tốt nhất trên localhost hoặc HTTPS</div>
+</footer>
+
+<div class="info-modal" id="infoModal" aria-hidden="true">
+  <div class="info-card" role="dialog" aria-modal="true" aria-labelledby="infoTitle">
+    <div class="info-head">
+      <h2 id="infoTitle">Thông tin</h2>
+      <button class="info-close" id="infoClose" type="button" aria-label="Đóng">×</button>
+    </div>
+    <div class="info-body" id="infoBody"></div>
+  </div>
+</div>
 </div><!-- /app -->
 
 <script>
@@ -1381,6 +1423,35 @@ $('loadProject').onclick=()=>{
 };
 $('clearProject').onclick=()=>{localStorage.removeItem('pdfFusionPlusState');status('Đã xóa project')};
 
+function resetFormDefaults(){
+  const defaults={
+    outputName:'pdf-fusion',addPageNo:true,addBlank:false,
+    wmEnable:false,wmText:'CONFIDENTIAL',wmSize:'42',wmOpacity:'0.18',wmOpacityRange:'0.18',wmAngle:'-35',wmColor:'#111111',wmPos:'center',
+    wmLogoEnable:false,wmLogoWidth:'220',wmLogoOpacity:'0.18',wmLogoOpacityRange:'0.18',wmLogoPos:'center',wmLogoPages:'',wmLogoPreviewPage:'1',wmLogoUsePreview:true,
+    qrEnable:false,qrText:'',qrPos:'bottom-right',
+    signText:'',useDrawSign:false,signWidth:'150',signPos:'bottom-right',
+    ocrLang:'vie+eng',batchWm:true,batchNo:true,batchQr:false,batchSign:false
+  };
+  for(const [id,val] of Object.entries(defaults)){
+    const el=$(id);if(!el)continue;
+    if(el.type==='checkbox')el.checked=!!val;else el.value=val;
+  }
+}
+function resetAll(){
+  if(!confirm('Reset toàn bộ dự án? File đã chọn, chữ ký, logo, watermark, OCR, editor và cấu hình lưu tạm sẽ bị xóa.'))return;
+  entries=[];entryStore.clear();undoStack=[];redoStack=[];lastOCR='';signDataUrl='';drawnSignDataUrl='';wmLogoDataUrl='';editorObjects=[];
+  wmLogoCustom={enabled:false,cxPct:.5,cyPct:.5,wPct:.35};
+  localStorage.removeItem('pdfFusionPlusState');
+  resetFormDefaults();
+  clearSig();restoreSavedSignatureUI();
+  fileList.innerHTML='';downloads.innerHTML='';downloadEl.style.display='none';logEl.innerHTML='';$('ocrOut').value='';$('cmpOut').textContent='';$('pmGrid').innerHTML='';$('edOverlay').innerHTML='';
+  const edCanvas=$('edCanvas');edCanvas.getContext('2d').clearRect(0,0,edCanvas.width,edCanvas.height);edCanvas.width=0;edCanvas.height=0;
+  $('wmLogoPreviewWrap').style.display='none';$('wmLogoBox').style.display='none';
+  renderFiles();refreshSelects();progress(0);status('✅ Đã reset toàn bộ dự án.');
+  const exportTab=document.querySelector('.tab[data-tab="export"]');if(exportTab)exportTab.click();
+}
+$('resetAllBtn')?.addEventListener('click',resetAll);
+
 // Lưu nhẹ khi thay đổi setting, không lưu file gốc vì File/Uint8Array không nên nhét vào localStorage.
 function syncWatermarkOpacity(fromRange){
   const range=$('wmOpacityRange'),num=$('wmOpacity');
@@ -1414,6 +1485,52 @@ try{
   syncWatermarkOpacity(false);
   syncLogoOpacity(false);
 }catch{}
+
+const infoContents={
+  guide:{title:'Hướng dẫn sử dụng',html:`
+    <h3>1. Gộp PDF</h3>
+    <ul><li>Kéo thả PDF, DOCX hoặc ảnh vào vùng chọn file.</li><li>Sắp xếp thứ tự bằng biểu tượng ☰.</li><li>Nhập dải trang nếu cần, ví dụ <code>1-3,5</code>.</li><li>Bấm <b>Xuất PDF</b> để tải file kết quả.</li></ul>
+    <h3>2. Watermark</h3>
+    <ul><li>Watermark chữ có thể chỉnh màu, độ đậm nhạt, kích thước, góc và vị trí.</li><li>Watermark logo có thể preview trên một trang đại diện, kéo để di chuyển và kéo góc để phóng/thu.</li><li>Ô trang áp dụng để trống nghĩa là áp dụng cho tất cả trang.</li></ul>
+    <h3>3. Chữ ký</h3>
+    <ul><li>Vào tab Chữ ký, vẽ chữ ký, bấm lưu.</li><li>Có thể ký một trang hoặc tất cả trang.</li></ul>
+  `},
+  faq:{title:'FAQ',html:`
+    <h3>File có bị upload lên server không?</h3><p>Không. App xử lý trực tiếp trong trình duyệt của bạn.</p>
+    <h3>Tại sao PDF lớn bị chậm?</h3><p>PDF lớn cần nhiều RAM/CPU. Hãy thử chia nhỏ file hoặc xử lý ít trang hơn.</p>
+    <h3>OCR có chính xác tuyệt đối không?</h3><p>Không. OCR phụ thuộc vào độ nét, font chữ, ngôn ngữ và chất lượng scan.</p>
+    <h3>Có dùng offline được không?</h3><p>Có thể dùng tốt hơn khi đã chạy qua localhost/HTTPS và service worker đã cache tài nguyên cần thiết.</p>
+  `},
+  privacy:{title:'Bảo mật & quyền riêng tư',html:`
+    <p>PDF Fusion Smart Pro ưu tiên xử lý cục bộ trên trình duyệt. File của bạn không được gửi lên máy chủ của ứng dụng.</p>
+    <ul><li>File được đọc bằng JavaScript trong trình duyệt.</li><li>Một số cấu hình như chữ ký, logo, watermark có thể lưu trong <code>localStorage</code>.</li><li>Không nên dùng trên máy công cộng nếu tài liệu có nội dung nhạy cảm.</li><li>Nên bấm <b>Reset</b> sau khi xử lý tài liệu quan trọng.</li></ul>
+  `},
+  terms:{title:'Điều khoản sử dụng',html:`
+    <ul><li>Người dùng tự chịu trách nhiệm với file và nội dung được xử lý.</li><li>Không sử dụng công cụ để chỉnh sửa, giả mạo hoặc phát tán tài liệu trái pháp luật.</li><li>Các thư viện bên thứ ba có license riêng, cần kiểm tra trước khi phát hành thương mại.</li><li>Công cụ được cung cấp theo hiện trạng, có thể có lỗi hoặc giới hạn kỹ thuật.</li></ul>
+  `},
+  notes:{title:'Lưu ý khi sử dụng',html:`
+    <ul><li>Không mở bằng <code>file://</code>; nên chạy bằng <code>localhost</code> hoặc HTTPS.</li><li>PDF có mật khẩu, mã hóa hoặc cấu trúc đặc biệt có thể không đọc được.</li><li>Logo/chữ ký quá nặng có thể làm đầy <code>localStorage</code>.</li><li>Trước khi gửi tài liệu quan trọng, hãy mở file xuất ra và kiểm tra lại từng trang.</li></ul>
+  `},
+  disclaimer:{title:'Miễn trừ trách nhiệm',html:`
+    <p>Công cụ này hỗ trợ xử lý PDF tự động nhưng không đảm bảo kết quả luôn chính xác tuyệt đối trong mọi trường hợp.</p>
+    <ul><li>Người dùng cần tự kiểm tra file đầu ra trước khi sử dụng chính thức.</li><li>Tác giả không chịu trách nhiệm cho mất dữ liệu, sai định dạng, lỗi OCR, lỗi watermark hoặc thiệt hại phát sinh từ việc sử dụng công cụ.</li><li>Không dùng công cụ này làm căn cứ pháp lý duy nhất cho tài liệu quan trọng.</li></ul>
+  `}
+};
+function openInfo(key){
+  const data=infoContents[key];if(!data)return;
+  $('infoTitle').textContent=data.title;
+  $('infoBody').innerHTML=data.html;
+  $('infoModal').classList.add('show');
+  $('infoModal').setAttribute('aria-hidden','false');
+}
+function closeInfo(){
+  $('infoModal').classList.remove('show');
+  $('infoModal').setAttribute('aria-hidden','true');
+}
+document.querySelectorAll('[data-info]').forEach(btn=>btn.addEventListener('click',()=>openInfo(btn.dataset.info)));
+$('infoClose')?.addEventListener('click',closeInfo);
+$('infoModal')?.addEventListener('click',e=>{if(e.target===$('infoModal'))closeInfo()});
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeInfo()});
 
 if('serviceWorker' in navigator)navigator.serviceWorker.register('./pdf-fusion-sw.js').then(()=>log('Service worker đã đăng ký.')).catch(()=>log('Service worker cần HTTPS/localhost.'));
 </script>
