@@ -113,6 +113,12 @@ input[type=color]{height:40px;padding:3px;cursor:pointer}
 input[type=range]{padding:0;accent-color:var(--accent)}
 .range-line{display:grid;grid-template-columns:1fr 72px;gap:8px;align-items:center;margin-top:8px}
 .mini-lbl{font-size:11px;color:var(--muted);margin:8px 0 4px}
+.wm-preview-wrap{position:relative;background:#0a0a18;border-radius:14px;padding:10px;overflow:auto;margin-top:10px;display:none}
+.wm-preview-stage{position:relative;display:inline-block;line-height:0}
+.wm-preview-stage canvas{background:white;border-radius:8px;display:block;max-width:100%}
+.wm-logo-box{position:absolute;left:0;top:0;width:180px;touch-action:none;cursor:move;display:none;outline:2px dashed rgba(124,110,247,.85);border-radius:8px;line-height:0}
+.wm-logo-box img{width:100%;height:auto;display:block;user-select:none;pointer-events:none;border-radius:6px}
+.wm-resize-handle{position:absolute;right:-9px;bottom:-9px;width:18px;height:18px;border-radius:50%;background:var(--accent);border:2px solid white;cursor:nwse-resize;box-shadow:0 2px 10px rgba(0,0,0,.35)}
 label{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--muted);cursor:pointer}
 label input[type=checkbox]{width:auto;accent-color:var(--accent)}
 
@@ -307,7 +313,6 @@ label input[type=checkbox]{width:auto;accent-color:var(--accent)}
       <input id="wmLogoImage" type="file" accept="image/png,image/jpeg" style="display:block;margin-top:8px">
       <div class="three" style="margin-top:8px">
         <input id="wmLogoWidth" type="number" value="220" placeholder="Rộng logo">
-        <input id="wmLogoOpacity" type="number" min="0" max="1" step="0.01" value="0.18" placeholder="Độ mờ logo">
         <select id="wmLogoPos">
           <option value="center" selected>Giữa trang</option>
           <option value="bottom-right">Dưới phải</option>
@@ -315,8 +320,30 @@ label input[type=checkbox]{width:auto;accent-color:var(--accent)}
           <option value="top-right">Trên phải</option>
           <option value="top-left">Trên trái</option>
         </select>
+        <input id="wmLogoPages" placeholder="Trang áp dụng: 1-3,5">
       </div>
-      <div class="hint">Mặc định chữ và logo nằm giữa trang, màu #111111, độ đậm nhạt 0.18 nếu người dùng không chỉnh.</div>
+      <div class="range-line">
+        <input id="wmLogoOpacityRange" type="range" min="0" max="1" step="0.01" value="0.18" title="Độ đậm nhạt logo">
+        <input id="wmLogoOpacity" type="number" min="0" max="1" step="0.01" value="0.18" placeholder="Độ mờ logo">
+      </div>
+
+      <div class="mini-lbl">Preview kéo thả logo trên 1 trang đại diện</div>
+      <select id="wmLogoPreviewFile" style="margin-top:8px"></select>
+      <div class="three" style="margin-top:8px">
+        <input id="wmLogoPreviewPage" type="number" value="1" min="1" placeholder="Trang preview">
+        <button class="btn good" id="wmLogoPreviewBtn" type="button">👁 Xem preview</button>
+        <label><input id="wmLogoUsePreview" type="checkbox" checked> Dùng vị trí kéo</label>
+      </div>
+      <div class="wm-preview-wrap" id="wmLogoPreviewWrap">
+        <div class="wm-preview-stage" id="wmLogoPreviewStage">
+          <canvas id="wmLogoPreviewCanvas"></canvas>
+          <div id="wmLogoBox" class="wm-logo-box">
+            <img id="wmLogoOverlay" alt="Watermark logo preview">
+            <div id="wmLogoResize" class="wm-resize-handle"></div>
+          </div>
+        </div>
+      </div>
+      <div class="hint">Mặc định chữ và logo nằm giữa trang. Logo có thể kéo để đổi vị trí, kéo nút tròn ở góc để phóng/thu. Ô trang áp dụng để trống = tất cả trang.</div>
     </div>
 
     <div class="section">
@@ -567,6 +594,7 @@ const {PDFDocument,StandardFonts,rgb,degrees}=window.PDFLib||{};
 if(window.pdfjsLib)pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
 let entries=[],undoStack=[],redoStack=[],currentTab='export',lastOCR='',signDataUrl='',drawnSignDataUrl='',wmLogoDataUrl='',editorObjects=[];
+let wmLogoCustom={enabled:false,cxPct:.5,cyPct:.5,wPct:.35};
 const entryStore=new Map();
 let pmSortable=null;
 const $=id=>document.getElementById(id);
@@ -940,7 +968,7 @@ $('redoBtn').onclick=()=>{if(!redoStack.length)return;undoStack.push(JSON.string
 
 function refreshSelects(){
   const pdfs=entries.filter(e=>e.type==='pdf'&&!e.error);
-  ['pmFile','ocrFile','cmpA','cmpB','tableFile','edFile','splitFile','splitEachFile','signDirectFile'].forEach(id=>{
+  ['pmFile','ocrFile','cmpA','cmpB','tableFile','edFile','splitFile','splitEachFile','signDirectFile','wmLogoPreviewFile'].forEach(id=>{
     const s=$(id);if(!s)return;
     const old=s.value;
     s.innerHTML=pdfs.map(e=>`<option value="${esc(e.id)}">${esc(e.file.name)} (${e.pages}tr)</option>`).join('');
@@ -968,13 +996,23 @@ async function decorate(doc,opts={}){
   if(wmLogoDataUrl&&($('wmLogoEnable')?.checked||opts.wmLogo)){
     const imgBytes=dataUrlBytes(wmLogoDataUrl);
     const img=wmLogoDataUrl.startsWith('data:image/jpeg')?await doc.embedJpg(imgBytes):await doc.embedPng(imgBytes);
-    const sw=+$('wmLogoWidth').value||220;
-    const sc=sw/img.width;
     const op=Math.max(0,Math.min(1,+$('wmLogoOpacity').value||.18));
-    pages.forEach(p=>{
+    const pageInput=($('wmLogoPages')?.value||'').trim();
+    const targetPages=pageInput?new Set(parseRange(pageInput,pages.length)):null;
+    pages.forEach((p,idx)=>{
+      if(targetPages&&!targetPages.has(idx))return;
       const {width,height}=p.getSize();
-      const q=pos($('wmLogoPos')?.value||'center',width,height,sw,img.height*sc);
-      p.drawImage(img,{x:q.x,y:q.y,width:sw,height:img.height*sc,opacity:op});
+      const usePreview=$('wmLogoUsePreview')?.checked&&wmLogoCustom?.enabled;
+      const sw=usePreview?width*Math.max(.03,Math.min(1.4,wmLogoCustom.wPct)):(+$('wmLogoWidth').value||220);
+      const sc=sw/img.width;
+      const oh=img.height*sc;
+      let q;
+      if(usePreview){
+        q={x:width*wmLogoCustom.cxPct-sw/2,y:height*(1-wmLogoCustom.cyPct)-oh/2};
+      }else{
+        q=pos($('wmLogoPos')?.value||'center',width,height,sw,oh);
+      }
+      p.drawImage(img,{x:q.x,y:q.y,width:sw,height:oh,opacity:op});
     });
   }
   if(opts.no||$('addPageNo').checked){pages.forEach((p,i)=>{const {width}=p.getSize();p.drawText(`${i+1}/${pages.length}`,{x:width/2-16,y:18,size:10,font,color:rgb(.25,.25,.25)})})}
@@ -1023,7 +1061,93 @@ $('runBtn').onclick=exportPDF;
 
 // ─── Sign image upload ────────────────────────────────────────────────────────
 $('signImage').onchange=async e=>{const f=e.target.files[0];if(!f)return;signDataUrl=await new Promise(res=>{const r=new FileReader();r.onload=()=>res(r.result);r.readAsDataURL(f)});status('Đã tải ảnh chữ ký/logo');autosave()};
-$('wmLogoImage').onchange=async e=>{const f=e.target.files[0];if(!f)return;wmLogoDataUrl=await new Promise(res=>{const r=new FileReader();r.onload=()=>res(r.result);r.readAsDataURL(f)});$('wmLogoEnable').checked=true;status('Đã tải watermark logo');autosave()};
+$('wmLogoImage').onchange=async e=>{const f=e.target.files[0];if(!f)return;wmLogoDataUrl=await new Promise(res=>{const r=new FileReader();r.onload=()=>res(r.result);r.readAsDataURL(f)});$('wmLogoEnable').checked=true;status('Đã tải watermark logo');renderWmLogoBox();autosave()};
+
+async function loadWmLogoPreview(){
+  const e=entries.find(x=>x.id===$('wmLogoPreviewFile')?.value);
+  if(!e){alert('Chọn 1 file PDF để làm trang đại diện.');return}
+  if(!wmLogoDataUrl){alert('Upload logo trước đã.');return}
+  const pdf=await pdfjsLib.getDocument({data:copyBytes(e)}).promise;
+  const pageNo=Math.max(1,Math.min(pdf.numPages,+$('wmLogoPreviewPage').value||1));
+  $('wmLogoPreviewPage').value=pageNo;
+  const page=await pdf.getPage(pageNo);
+  const wrap=$('wmLogoPreviewWrap');
+  const maxW=Math.min(420,wrap.parentElement.clientWidth-30);
+  const viewport0=page.getViewport({scale:1});
+  const scale=Math.max(.25,Math.min(1.2,maxW/viewport0.width));
+  const vp=page.getViewport({scale});
+  const c=$('wmLogoPreviewCanvas');
+  c.width=vp.width;c.height=vp.height;
+  await page.render({canvasContext:c.getContext('2d'),viewport:vp}).promise;
+  wrap.style.display='block';
+  renderWmLogoBox();
+  status('Kéo logo để đổi vị trí, kéo nút tròn để phóng/thu.');
+}
+function renderWmLogoBox(){
+  const c=$('wmLogoPreviewCanvas'),box=$('wmLogoBox'),img=$('wmLogoOverlay');
+  if(!box||!img||!wmLogoDataUrl||!c.width){return}
+  img.src=wmLogoDataUrl;
+  const w=Math.max(30,c.width*(wmLogoCustom.wPct||.35));
+  const left=c.width*(wmLogoCustom.cxPct??.5)-w/2;
+  const top=c.height*(wmLogoCustom.cyPct??.5)-box.offsetHeight/2;
+  box.style.width=w+'px';
+  box.style.left=Math.max(-w*.75,Math.min(c.width-w*.25,left))+'px';
+  box.style.top=Math.max(-20,Math.min(c.height-20,top))+'px';
+  box.style.display='block';
+}
+function updateWmLogoCustomFromBox(save=false){
+  const c=$('wmLogoPreviewCanvas'),box=$('wmLogoBox');
+  if(!c.width||!box)return;
+  const w=box.offsetWidth;
+  const h=box.offsetHeight||w*.5;
+  wmLogoCustom={enabled:true,cxPct:(box.offsetLeft+w/2)/c.width,cyPct:(box.offsetTop+h/2)/c.height,wPct:w/c.width};
+  $('wmLogoUsePreview').checked=true;
+  $('wmLogoWidth').value=Math.round(wmLogoCustom.wPct*595);
+  if(save)autosave();
+}
+(function setupWmLogoDrag(){
+  const box=$('wmLogoBox'),handle=$('wmLogoResize');
+  if(!box||!handle)return;
+  let mode='',startX=0,startY=0,startLeft=0,startTop=0,startW=0;
+  box.addEventListener('pointerdown',e=>{
+    if(e.target===handle)return;
+    mode='move';startX=e.clientX;startY=e.clientY;startLeft=box.offsetLeft;startTop=box.offsetTop;box.setPointerCapture?.(e.pointerId);
+  });
+  handle.addEventListener('pointerdown',e=>{
+    e.stopPropagation();mode='resize';startX=e.clientX;startY=e.clientY;startW=box.offsetWidth;box.setPointerCapture?.(e.pointerId);
+  });
+  box.addEventListener('pointermove',e=>{
+    if(!mode)return;
+    const c=$('wmLogoPreviewCanvas');
+    if(mode==='move'){
+      box.style.left=startLeft+(e.clientX-startX)+'px';
+      box.style.top=startTop+(e.clientY-startY)+'px';
+    }else{
+      const next=Math.max(30,Math.min(c.width*1.4,startW+(e.clientX-startX)));
+      box.style.width=next+'px';
+    }
+    updateWmLogoCustomFromBox(false);
+  });
+  box.addEventListener('wheel',e=>{
+    e.preventDefault();
+    const c=$('wmLogoPreviewCanvas');
+    const factor=e.deltaY<0?1.06:.94;
+    const oldW=box.offsetWidth;
+    const oldH=box.offsetHeight||oldW*.5;
+    const next=Math.max(30,Math.min(c.width*1.4,oldW*factor));
+    const cx=box.offsetLeft+oldW/2;
+    const cy=box.offsetTop+oldH/2;
+    box.style.width=next+'px';
+    requestAnimationFrame(()=>{
+      const nh=box.offsetHeight||next*.5;
+      box.style.left=(cx-next/2)+'px';
+      box.style.top=(cy-nh/2)+'px';
+      updateWmLogoCustomFromBox(true);
+    });
+  },{passive:false});
+  ['pointerup','pointercancel','lostpointercapture'].forEach(ev=>box.addEventListener(ev,()=>{if(mode)updateWmLogoCustomFromBox(true);mode=''}));
+})();
+$('wmLogoPreviewBtn')?.addEventListener('click',loadWmLogoPreview);
 
 // ─── Page Manager ────────────────────────────────────────────────────────────
 $('pmLoad').onclick=loadPM;
@@ -1218,7 +1342,7 @@ async function appendEntry(doc,e){
 async function qrPng(text){const data=await QRCode.toDataURL(text||'PDF Fusion',{margin:1,width:220});return Uint8Array.from(atob(data.split(',')[1]),c=>c.charCodeAt(0))}
 
 // ─── Project ─────────────────────────────────────────────────────────────────
-const settingIds=['outputName','addPageNo','addBlank','wmEnable','wmText','wmSize','wmOpacity','wmOpacityRange','wmAngle','wmColor','wmPos','wmLogoEnable','wmLogoWidth','wmLogoOpacity','wmLogoPos','qrEnable','qrText','qrPos','signText','useDrawSign','signWidth','signPos','ocrLang','batchWm','batchNo','batchQr','batchSign'];
+const settingIds=['outputName','addPageNo','addBlank','wmEnable','wmText','wmSize','wmOpacity','wmOpacityRange','wmAngle','wmColor','wmPos','wmLogoEnable','wmLogoWidth','wmLogoOpacity','wmLogoOpacityRange','wmLogoPos','wmLogoPages','wmLogoPreviewPage','wmLogoUsePreview','qrEnable','qrText','qrPos','signText','useDrawSign','signWidth','signPos','ocrLang','batchWm','batchNo','batchQr','batchSign'];
 function collectSettings(){
   const settings={currentTab};
   for(const id of settingIds){const el=$(id);if(!el)continue;settings[id]=el.type==='checkbox'?el.checked:el.value}
@@ -1236,7 +1360,7 @@ function applySettings(settings={}){
 }
 function autosave(){
   try{
-    localStorage.setItem('pdfFusionPlusState',JSON.stringify({settings:collectSettings(),editorObjects,drawnSignDataUrl,wmLogoDataUrl}));
+    localStorage.setItem('pdfFusionPlusState',JSON.stringify({settings:collectSettings(),editorObjects,drawnSignDataUrl,wmLogoDataUrl,wmLogoCustom}));
   }catch(err){log('Không thể autosave: localStorage đầy hoặc bị chặn.')}
 }
 setInterval(autosave,30000);
@@ -1249,6 +1373,7 @@ $('loadProject').onclick=()=>{
     editorObjects.push(...(s.editorObjects||[]));
     drawnSignDataUrl=s.drawnSignDataUrl||'';
     wmLogoDataUrl=s.wmLogoDataUrl||'';
+    wmLogoCustom=s.wmLogoCustom||wmLogoCustom;
     restoreSavedSignatureUI();
     renderEd();
     status('✅ Đã tải cấu hình project.');
@@ -1263,8 +1388,16 @@ function syncWatermarkOpacity(fromRange){
   if(fromRange)num.value=range.value;
   else range.value=Math.max(0,Math.min(1,+num.value||0)).toFixed(2);
 }
+function syncLogoOpacity(fromRange){
+  const range=$('wmLogoOpacityRange'),num=$('wmLogoOpacity');
+  if(!range||!num)return;
+  if(fromRange)num.value=range.value;
+  else range.value=Math.max(0,Math.min(1,+num.value||0)).toFixed(2);
+}
 $('wmOpacityRange')?.addEventListener('input',()=>{syncWatermarkOpacity(true);autosave()});
 $('wmOpacity')?.addEventListener('input',()=>{syncWatermarkOpacity(false);autosave()});
+$('wmLogoOpacityRange')?.addEventListener('input',()=>{syncLogoOpacity(true);autosave()});
+$('wmLogoOpacity')?.addEventListener('input',()=>{syncLogoOpacity(false);autosave()});
 
 document.querySelectorAll('input,select,textarea').forEach(el=>{
   el.addEventListener('change',()=>autosave());
@@ -1276,7 +1409,10 @@ try{
   if(saved.editorObjects){editorObjects.length=0;editorObjects.push(...saved.editorObjects)}
   drawnSignDataUrl=saved.drawnSignDataUrl||'';
   wmLogoDataUrl=saved.wmLogoDataUrl||'';
+  wmLogoCustom=saved.wmLogoCustom||wmLogoCustom;
   restoreSavedSignatureUI();
+  syncWatermarkOpacity(false);
+  syncLogoOpacity(false);
 }catch{}
 
 if('serviceWorker' in navigator)navigator.serviceWorker.register('./pdf-fusion-sw.js').then(()=>log('Service worker đã đăng ký.')).catch(()=>log('Service worker cần HTTPS/localhost.'));
