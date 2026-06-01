@@ -1102,30 +1102,74 @@ async function decorate(doc,opts={}){
     });
   }
   if(opts.no||$('addPageNo').checked){pages.forEach((p,i)=>{const {width}=p.getSize();p.drawText(`${i+1}/${pages.length}`,{x:width/2-16,y:18,size:10,font,color:rgb(.25,.25,.25)})})}
-  if(opts.qr||$('qrEnable').checked){
-    try{
-      const qrInfo=getQrPayload();
-      if(!qrInfo.payload){throw new Error('Nội dung QR đang trống.')}
-      const qrSize=Math.max(45,Math.min(180,+$('qrSize')?.value||78));
-      const img=await doc.embedPng(await qrPng(qrInfo.payload));
-      const pageInput=($('qrPages')?.value||'').trim();
-      const targetPages=pageInput?new Set(parseRange(pageInput,pages.length)):null;
-      pages.forEach((p,idx)=>{
-        if(targetPages&&!targetPages.has(idx))return;
-        const {width,height}=p.getSize();
-        const q=pos($('qrPos')?.value||'bottom-right',width,height,qrSize,qrSize);
-        p.drawImage(img,{x:q.x,y:q.y,width:qrSize,height:qrSize});
-        if($('qrShowLabel')?.checked&&qrInfo.label){
-          const label=safe(qrInfo.label).slice(0,80);
-          p.drawText(label,{x:q.x,y:Math.max(10,q.y-11),size:7,font,color:rgb(.22,.22,.22)});
-        }
+  if(opts.qr || $('qrEnable').checked){
+  try{
+    const payload = getQrPayload();
+    const verifyId = $('verifyId')?.value?.trim() || '';
+    const qrSize = Math.max(50, Math.min(180, +($('qrSize')?.value || 82)));
+
+    const img = await doc.embedPng(await qrPng(payload, { width: 360 }));
+
+    pages.forEach((p, idx)=>{
+      const targetPages = ($('qrPages')?.value || '').trim()
+        ? new Set(parseRange($('qrPages').value, pages.length))
+        : null;
+
+      if(targetPages && !targetPages.has(idx)) return;
+
+      const {width, height} = p.getSize();
+
+      const boxPad = 8;
+      const labelH = verifyId ? 12 : 0;
+      const boxW = qrSize + boxPad * 2;
+      const boxH = qrSize + boxPad * 2 + labelH;
+
+      const q = pos($('qrPos').value, width, height, boxW, boxH, 42);
+
+      p.drawRectangle({
+        x: q.x,
+        y: q.y,
+        width: boxW,
+        height: boxH,
+        color: rgb(1,1,1),
+        opacity: 0.96
       });
-    }catch(err){
-      console.error(err);
-      log('Không tạo được QR: '+err.message);
-      status('⚠ Không tạo được QR. Kiểm tra nội dung QR.');
-    }
+
+      p.drawRectangle({
+        x: q.x,
+        y: q.y,
+        width: boxW,
+        height: boxH,
+        borderColor: rgb(0.75,0.75,0.75),
+        borderWidth: 0.6,
+        opacity: 1
+      });
+
+      p.drawImage(img,{
+        x: q.x + boxPad,
+        y: q.y + boxPad + labelH,
+        width: qrSize,
+        height: qrSize
+      });
+
+      if(verifyId){
+        const idText = safe(verifyId).slice(0,32);
+        const textW = font.widthOfTextAtSize(idText, 6.5);
+        p.drawText(idText,{
+          x: q.x + Math.max(4, (boxW - textW) / 2),
+          y: q.y + 4,
+          size: 6.5,
+          font,
+          color: rgb(0.1,0.1,0.1)
+        });
+      }
+    });
+  }catch(err){
+    console.error(err);
+    log('Không tạo được QR: '+err.message);
+    status('⚠ Không tạo được QR');
   }
+}
   const useDrawn=($('useDrawSign').checked&&drawnSignDataUrl)||opts.sign;
   if(useDrawn&&drawnSignDataUrl){
     const imgBytes=Uint8Array.from(atob(drawnSignDataUrl.split(',')[1]),c=>c.charCodeAt(0));
