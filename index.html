@@ -113,6 +113,8 @@ input[type=color]{height:40px;padding:3px;cursor:pointer}
 input[type=range]{padding:0;accent-color:var(--accent)}
 .range-line{display:grid;grid-template-columns:1fr 72px;gap:8px;align-items:center;margin-top:8px}
 .mini-lbl{font-size:11px;color:var(--muted);margin:8px 0 4px}
+.qr-preview-box{margin-top:8px;padding:10px;border-radius:12px;background:rgba(124,110,247,.08);border:1px solid rgba(124,110,247,.22);font-size:12px;color:#c8bfff;word-break:break-all;line-height:1.55}
+.qr-pill{display:inline-flex;align-items:center;gap:6px;border:1px solid rgba(124,110,247,.35);background:rgba(124,110,247,.14);border-radius:999px;padding:5px 9px;font-size:11px;color:#d9d3ff;margin-top:7px}
 .wm-preview-wrap{position:relative;background:#0a0a18;border-radius:14px;padding:10px;overflow:auto;margin-top:10px;display:none}
 .wm-preview-stage{position:relative;display:inline-block;line-height:0}
 .wm-preview-stage canvas{background:white;border-radius:8px;display:block;max-width:100%}
@@ -365,15 +367,55 @@ label input[type=checkbox]{width:auto;accent-color:var(--accent)}
     </div>
 
     <div class="section">
-      <h3>📱 QR Code</h3>
+      <h3>📱 QR Verification ID <span class="tag">NÂNG CẤP</span></h3>
       <label><input id="qrEnable" type="checkbox"> Đóng QR vào PDF</label>
-      <input id="qrText" placeholder="Link hoặc mã xác minh" style="margin-top:8px">
-      <select id="qrPos" style="margin-top:8px">
-        <option value="bottom-right">Dưới phải</option>
-        <option value="bottom-left">Dưới trái</option>
-        <option value="top-right">Trên phải</option>
-        <option value="top-left">Trên trái</option>
+
+      <div class="mini-lbl">Chế độ QR</div>
+      <select id="qrMode">
+        <option value="verify" selected>Verification ID</option>
+        <option value="url">Website URL</option>
+        <option value="custom">Custom Text</option>
+        <option value="contact">Contact / vCard</option>
       </select>
+
+      <div id="qrVerifyBox">
+        <div class="mini-lbl">Verification ID</div>
+        <div class="row" style="margin-top:6px">
+          <input id="qrVerifyId" placeholder="VD: PFSP-20260601-A7X92K" style="flex:1;font-family:monospace">
+          <button class="btn good" id="qrGenId" type="button">🎲 Tạo ID</button>
+        </div>
+        <div class="hint">QR sẽ trỏ đến trang xác minh: <code>verify.html?id=...</code></div>
+      </div>
+
+      <div id="qrTextBox">
+        <div class="mini-lbl">Nội dung QR</div>
+        <textarea id="qrText" rows="3" placeholder="Nhập link, nội dung tùy chỉnh hoặc thông tin liên hệ"></textarea>
+      </div>
+
+      <div class="three" style="margin-top:8px">
+        <select id="qrPos">
+          <option value="bottom-right">Dưới phải</option>
+          <option value="bottom-left">Dưới trái</option>
+          <option value="top-right">Trên phải</option>
+          <option value="top-left">Trên trái</option>
+          <option value="center">Giữa trang</option>
+        </select>
+        <input id="qrSize" type="number" min="45" max="180" value="78" placeholder="Kích thước QR">
+        <select id="qrEcc">
+          <option value="M" selected>Lỗi M</option>
+          <option value="Q">Lỗi Q</option>
+          <option value="H">Lỗi H</option>
+          <option value="L">Lỗi L</option>
+        </select>
+      </div>
+
+      <div class="two" style="margin-top:8px">
+        <input id="qrPages" placeholder="Trang áp dụng: 1-3,5">
+        <label><input id="qrShowLabel" type="checkbox" checked> In ID / nhãn dưới QR</label>
+      </div>
+
+      <div class="qr-preview-box" id="qrPayloadPreview">Payload QR sẽ hiện ở đây.</div>
+      <div class="qr-pill">💡 Để trống ô trang áp dụng = đóng QR lên tất cả trang.</div>
     </div>
 
     <div class="section">
@@ -1060,8 +1102,28 @@ async function decorate(doc,opts={}){
   }
   if(opts.no||$('addPageNo').checked){pages.forEach((p,i)=>{const {width}=p.getSize();p.drawText(`${i+1}/${pages.length}`,{x:width/2-16,y:18,size:10,font,color:rgb(.25,.25,.25)})})}
   if(opts.qr||$('qrEnable').checked){
-    const img=await doc.embedPng(await qrPng($('qrText').value||location.href));
-    pages.forEach(p=>{const {width,height}=p.getSize();const q=pos($('qrPos').value,width,height,70,70);p.drawImage(img,{x:q.x,y:q.y,width:70,height:70})});
+    try{
+      const qrInfo=getQrPayload();
+      if(!qrInfo.payload){throw new Error('Nội dung QR đang trống.')}
+      const qrSize=Math.max(45,Math.min(180,+$('qrSize')?.value||78));
+      const img=await doc.embedPng(await qrPng(qrInfo.payload));
+      const pageInput=($('qrPages')?.value||'').trim();
+      const targetPages=pageInput?new Set(parseRange(pageInput,pages.length)):null;
+      pages.forEach((p,idx)=>{
+        if(targetPages&&!targetPages.has(idx))return;
+        const {width,height}=p.getSize();
+        const q=pos($('qrPos')?.value||'bottom-right',width,height,qrSize,qrSize);
+        p.drawImage(img,{x:q.x,y:q.y,width:qrSize,height:qrSize});
+        if($('qrShowLabel')?.checked&&qrInfo.label){
+          const label=safe(qrInfo.label).slice(0,80);
+          p.drawText(label,{x:q.x,y:Math.max(10,q.y-11),size:7,font,color:rgb(.22,.22,.22)});
+        }
+      });
+    }catch(err){
+      console.error(err);
+      log('Không tạo được QR: '+err.message);
+      status('⚠ Không tạo được QR. Kiểm tra nội dung QR.');
+    }
   }
   const useDrawn=($('useDrawSign').checked&&drawnSignDataUrl)||opts.sign;
   if(useDrawn&&drawnSignDataUrl){
@@ -1382,10 +1444,71 @@ async function appendEntry(doc,e){
 }
 
 // ─── QR ──────────────────────────────────────────────────────────────────────
-async function qrPng(text){const data=await QRCode.toDataURL(text||'PDF Fusion',{margin:1,width:220});return Uint8Array.from(atob(data.split(',')[1]),c=>c.charCodeAt(0))}
+function appBaseUrl(){
+  const origin=(location.origin&&location.origin!=='null')?location.origin:'https://gtl-roan.vercel.app';
+  const path=location.pathname.replace(/\/[^/]*$/,'/');
+  return origin+path;
+}
+function generateVerifyId(){
+  const d=new Date();
+  const date=d.getFullYear()+String(d.getMonth()+1).padStart(2,'0')+String(d.getDate()).padStart(2,'0');
+  const rand=(crypto?.getRandomValues?Array.from(crypto.getRandomValues(new Uint8Array(4))).map(x=>(x%36).toString(36)).join(''):Math.random().toString(36).slice(2,8)).toUpperCase();
+  return `PFSP-${date}-${rand.slice(0,6)}`;
+}
+function buildVCard(){
+  const raw=($('qrText')?.value||'').trim();
+  if(raw.includes('BEGIN:VCARD'))return raw;
+  const lines=raw.split(/\n+/).map(x=>x.trim()).filter(Boolean);
+  const name=lines[0]||'PDF Fusion Contact';
+  const email=(raw.match(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/i)||[''])[0];
+  const phone=(raw.match(/(?:\+?\d[\d .-]{7,}\d)/)||[''])[0];
+  return `BEGIN:VCARD\nVERSION:3.0\nFN:${name}${email?`\nEMAIL:${email}`:''}${phone?`\nTEL:${phone}`:''}\nEND:VCARD`;
+}
+function getQrPayload(){
+  const mode=$('qrMode')?.value||'verify';
+  if(mode==='verify'){
+    let id=($('qrVerifyId')?.value||'').trim();
+    if(!id){id=generateVerifyId();$('qrVerifyId').value=id;}
+    const payload=appBaseUrl()+`verify.html?id=${encodeURIComponent(id)}`;
+    return {mode,payload,label:id};
+  }
+  if(mode==='url'){
+    const url=($('qrText')?.value||location.href).trim();
+    return {mode,payload:url,label:'QR: '+url.replace(/^https?:\/\//,'').slice(0,48)};
+  }
+  if(mode==='contact'){
+    return {mode,payload:buildVCard(),label:'Contact QR'};
+  }
+  const text=($('qrText')?.value||'').trim();
+  return {mode,payload:text,label:text.slice(0,50)};
+}
+function updateQrUi(){
+  const mode=$('qrMode')?.value||'verify';
+  if($('qrVerifyBox'))$('qrVerifyBox').style.display=mode==='verify'?'block':'none';
+  if($('qrTextBox'))$('qrTextBox').style.display=mode==='verify'?'none':'block';
+  try{
+    const info=getQrPayload();
+    if($('qrPayloadPreview'))$('qrPayloadPreview').textContent=info.payload||'Payload QR đang trống.';
+  }catch(err){
+    if($('qrPayloadPreview'))$('qrPayloadPreview').textContent='Không tạo được payload QR: '+err.message;
+  }
+}
+async function qrPng(text){
+  if(!window.QRCode||typeof QRCode.toDataURL!=='function')throw new Error('Thư viện QRCode chưa tải được.');
+  const data=await QRCode.toDataURL(String(text||'PDF Fusion'),{
+    margin:1,
+    width:260,
+    errorCorrectionLevel:$('qrEcc')?.value||'M'
+  });
+  return Uint8Array.from(atob(data.split(',')[1]),c=>c.charCodeAt(0));
+}
+$('qrGenId')?.addEventListener('click',()=>{ $('qrVerifyId').value=generateVerifyId(); updateQrUi(); autosave(); });
+['qrMode','qrText','qrVerifyId','qrSize','qrPages','qrPos','qrEcc','qrShowLabel'].forEach(id=>{
+  const el=$(id); if(el){ el.addEventListener('input',()=>{updateQrUi();autosave();}); el.addEventListener('change',()=>{updateQrUi();autosave();}); }
+});
 
 // ─── Project ─────────────────────────────────────────────────────────────────
-const settingIds=['outputName','addPageNo','addBlank','wmEnable','wmText','wmSize','wmOpacity','wmOpacityRange','wmAngle','wmColor','wmPos','wmLogoEnable','wmLogoWidth','wmLogoOpacity','wmLogoOpacityRange','wmLogoPos','wmLogoPages','wmLogoPreviewPage','wmLogoUsePreview','qrEnable','qrText','qrPos','signText','useDrawSign','signWidth','signPos','ocrLang','batchWm','batchNo','batchQr','batchSign'];
+const settingIds=['outputName','addPageNo','addBlank','wmEnable','wmText','wmSize','wmOpacity','wmOpacityRange','wmAngle','wmColor','wmPos','wmLogoEnable','wmLogoWidth','wmLogoOpacity','wmLogoOpacityRange','wmLogoPos','wmLogoPages','wmLogoPreviewPage','wmLogoUsePreview','qrEnable','qrMode','qrVerifyId','qrText','qrPos','qrSize','qrEcc','qrPages','qrShowLabel','signText','useDrawSign','signWidth','signPos','ocrLang','batchWm','batchNo','batchQr','batchSign'];
 function collectSettings(){
   const settings={currentTab};
   for(const id of settingIds){const el=$(id);if(!el)continue;settings[id]=el.type==='checkbox'?el.checked:el.value}
@@ -1429,7 +1552,7 @@ function resetFormDefaults(){
     outputName:'pdf-fusion',addPageNo:true,addBlank:false,
     wmEnable:false,wmText:'CONFIDENTIAL',wmSize:'42',wmOpacity:'0.18',wmOpacityRange:'0.18',wmAngle:'-35',wmColor:'#111111',wmPos:'center',
     wmLogoEnable:false,wmLogoWidth:'220',wmLogoOpacity:'0.18',wmLogoOpacityRange:'0.18',wmLogoPos:'center',wmLogoPages:'',wmLogoPreviewPage:'1',wmLogoUsePreview:true,
-    qrEnable:false,qrText:'',qrPos:'bottom-right',
+    qrEnable:false,qrMode:'verify',qrVerifyId:'',qrText:'',qrPos:'bottom-right',qrSize:'78',qrEcc:'M',qrPages:'',qrShowLabel:true,
     signText:'',useDrawSign:false,signWidth:'150',signPos:'bottom-right',
     ocrLang:'vie+eng',batchWm:true,batchNo:true,batchQr:false,batchSign:false
   };
@@ -1485,7 +1608,9 @@ try{
   restoreSavedSignatureUI();
   syncWatermarkOpacity(false);
   syncLogoOpacity(false);
+  updateQrUi();
 }catch{}
+updateQrUi();
 
 function openInfo(key){
   const welcome={
