@@ -109,6 +109,10 @@ input,select,textarea{width:100%;border:1px solid var(--border);background:rgba(
 input:focus,select:focus,textarea:focus{border-color:var(--accent);background:rgba(124,110,247,.1)}
 select option{color:#111;background:#fff}
 textarea{resize:vertical}
+input[type=color]{height:40px;padding:3px;cursor:pointer}
+input[type=range]{padding:0;accent-color:var(--accent)}
+.range-line{display:grid;grid-template-columns:1fr 72px;gap:8px;align-items:center;margin-top:8px}
+.mini-lbl{font-size:11px;color:var(--muted);margin:8px 0 4px}
 label{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--muted);cursor:pointer}
 label input[type=checkbox]{width:auto;accent-color:var(--accent)}
 
@@ -279,13 +283,40 @@ label input[type=checkbox]{width:auto;accent-color:var(--accent)}
 
     <div class="section">
       <h3>🌊 Watermark / Stamp</h3>
-      <label><input id="wmEnable" type="checkbox"> Bật watermark</label>
+      <label><input id="wmEnable" type="checkbox"> Bật watermark chữ</label>
       <input id="wmText" value="CONFIDENTIAL" style="margin-top:8px">
       <div class="three" style="margin-top:8px">
         <input id="wmSize" type="number" value="42" placeholder="Cỡ chữ">
-        <input id="wmOpacity" type="number" step="0.05" value="0.18" placeholder="Độ mờ">
         <input id="wmAngle" type="number" value="-35" placeholder="Góc">
+        <input id="wmColor" type="color" value="#111111" title="Màu watermark">
       </div>
+      <div class="range-line">
+        <input id="wmOpacityRange" type="range" min="0" max="1" step="0.01" value="0.18" title="Độ đậm nhạt watermark">
+        <input id="wmOpacity" type="number" min="0" max="1" step="0.01" value="0.18" placeholder="Độ mờ">
+      </div>
+      <select id="wmPos" style="margin-top:8px">
+        <option value="center" selected>Giữa trang</option>
+        <option value="bottom-right">Dưới phải</option>
+        <option value="bottom-left">Dưới trái</option>
+        <option value="top-right">Trên phải</option>
+        <option value="top-left">Trên trái</option>
+      </select>
+
+      <div class="mini-lbl">Watermark logo</div>
+      <label><input id="wmLogoEnable" type="checkbox"> Bật watermark logo</label>
+      <input id="wmLogoImage" type="file" accept="image/png,image/jpeg" style="display:block;margin-top:8px">
+      <div class="three" style="margin-top:8px">
+        <input id="wmLogoWidth" type="number" value="220" placeholder="Rộng logo">
+        <input id="wmLogoOpacity" type="number" min="0" max="1" step="0.01" value="0.18" placeholder="Độ mờ logo">
+        <select id="wmLogoPos">
+          <option value="center" selected>Giữa trang</option>
+          <option value="bottom-right">Dưới phải</option>
+          <option value="bottom-left">Dưới trái</option>
+          <option value="top-right">Trên phải</option>
+          <option value="top-left">Trên trái</option>
+        </select>
+      </div>
+      <div class="hint">Mặc định chữ và logo nằm giữa trang, màu #111111, độ đậm nhạt 0.18 nếu người dùng không chỉnh.</div>
     </div>
 
     <div class="section">
@@ -535,7 +566,7 @@ label input[type=checkbox]{width:auto;accent-color:var(--accent)}
 const {PDFDocument,StandardFonts,rgb,degrees}=window.PDFLib||{};
 if(window.pdfjsLib)pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
-let entries=[],undoStack=[],redoStack=[],currentTab='export',lastOCR='',signDataUrl='',drawnSignDataUrl='',editorObjects=[];
+let entries=[],undoStack=[],redoStack=[],currentTab='export',lastOCR='',signDataUrl='',drawnSignDataUrl='',wmLogoDataUrl='',editorObjects=[];
 const entryStore=new Map();
 let pmSortable=null;
 const $=id=>document.getElementById(id);
@@ -810,7 +841,13 @@ function extra(data,name,type){
   a.href=url;a.download=name;a.textContent='⬇ '+name;
   downloads.appendChild(a);
 }
-function pos(which,w,h,ow,oh,m=36){const map={'bottom-right':[w-ow-m,m],'bottom-left':[m,m],'top-right':[w-ow-m,h-oh-m],'top-left':[m,h-oh-m],'bottom-center':[(w-ow)/2,m]};const a=map[which]||map['bottom-right'];return{x:a[0],y:a[1]}}
+function pos(which,w,h,ow,oh,m=36){const map={'center':[(w-ow)/2,(h-oh)/2],'bottom-right':[w-ow-m,m],'bottom-left':[m,m],'top-right':[w-ow-m,h-oh-m],'top-left':[m,h-oh-m],'bottom-center':[(w-ow)/2,m]};const a=map[which]||map['center'];return{x:a[0],y:a[1]}}
+function hexToPdfColor(hex){
+  const m=String(hex||'#111111').match(/^#?([a-f0-9]{2})([a-f0-9]{2})([a-f0-9]{2})$/i);
+  if(!m)return rgb(.07,.07,.07);
+  return rgb(parseInt(m[1],16)/255,parseInt(m[2],16)/255,parseInt(m[3],16)/255);
+}
+function dataUrlBytes(dataUrl){return Uint8Array.from(atob(dataUrl.split(',')[1]),c=>c.charCodeAt(0))}
 
 // ─── Files ───────────────────────────────────────────────────────────────────
 async function addFiles(files){
@@ -916,8 +953,29 @@ async function decorate(doc,opts={}){
   const font=await doc.embedFont(StandardFonts.Helvetica),bold=await doc.embedFont(StandardFonts.HelveticaBold);
   const pages=doc.getPages();
   if(opts.wm||$('wmEnable').checked){
-    const text=safe($('wmText').value||'CONFIDENTIAL'),size2=+$('wmSize').value||42,op=+$('wmOpacity').value||.18,ang=+$('wmAngle').value||-35;
-    pages.forEach(p=>{const {width,height}=p.getSize();p.drawText(text,{x:width*.18,y:height*.5,size:size2,font:bold,color:rgb(.1,.1,.1),opacity:op,rotate:degrees(ang)})});
+    const text=safe($('wmText').value||'CONFIDENTIAL');
+    const size2=+$('wmSize').value||42;
+    const op=Math.max(0,Math.min(1,+$('wmOpacity').value||.18));
+    const ang=+$('wmAngle').value||-35;
+    const color=hexToPdfColor($('wmColor')?.value||'#111111');
+    pages.forEach(p=>{
+      const {width,height}=p.getSize();
+      const textWidth=bold.widthOfTextAtSize(text,size2);
+      const q=pos($('wmPos')?.value||'center',width,height,textWidth,size2);
+      p.drawText(text,{x:q.x,y:q.y,size:size2,font:bold,color,opacity:op,rotate:degrees(ang)});
+    });
+  }
+  if(wmLogoDataUrl&&($('wmLogoEnable')?.checked||opts.wmLogo)){
+    const imgBytes=dataUrlBytes(wmLogoDataUrl);
+    const img=wmLogoDataUrl.startsWith('data:image/jpeg')?await doc.embedJpg(imgBytes):await doc.embedPng(imgBytes);
+    const sw=+$('wmLogoWidth').value||220;
+    const sc=sw/img.width;
+    const op=Math.max(0,Math.min(1,+$('wmLogoOpacity').value||.18));
+    pages.forEach(p=>{
+      const {width,height}=p.getSize();
+      const q=pos($('wmLogoPos')?.value||'center',width,height,sw,img.height*sc);
+      p.drawImage(img,{x:q.x,y:q.y,width:sw,height:img.height*sc,opacity:op});
+    });
   }
   if(opts.no||$('addPageNo').checked){pages.forEach((p,i)=>{const {width}=p.getSize();p.drawText(`${i+1}/${pages.length}`,{x:width/2-16,y:18,size:10,font,color:rgb(.25,.25,.25)})})}
   if(opts.qr||$('qrEnable').checked){
@@ -965,6 +1023,7 @@ $('runBtn').onclick=exportPDF;
 
 // ─── Sign image upload ────────────────────────────────────────────────────────
 $('signImage').onchange=async e=>{const f=e.target.files[0];if(!f)return;signDataUrl=await new Promise(res=>{const r=new FileReader();r.onload=()=>res(r.result);r.readAsDataURL(f)});status('Đã tải ảnh chữ ký/logo');autosave()};
+$('wmLogoImage').onchange=async e=>{const f=e.target.files[0];if(!f)return;wmLogoDataUrl=await new Promise(res=>{const r=new FileReader();r.onload=()=>res(r.result);r.readAsDataURL(f)});$('wmLogoEnable').checked=true;status('Đã tải watermark logo');autosave()};
 
 // ─── Page Manager ────────────────────────────────────────────────────────────
 $('pmLoad').onclick=loadPM;
@@ -1159,7 +1218,7 @@ async function appendEntry(doc,e){
 async function qrPng(text){const data=await QRCode.toDataURL(text||'PDF Fusion',{margin:1,width:220});return Uint8Array.from(atob(data.split(',')[1]),c=>c.charCodeAt(0))}
 
 // ─── Project ─────────────────────────────────────────────────────────────────
-const settingIds=['outputName','addPageNo','addBlank','wmEnable','wmText','wmSize','wmOpacity','wmAngle','qrEnable','qrText','qrPos','signText','useDrawSign','signWidth','signPos','ocrLang','batchWm','batchNo','batchQr','batchSign'];
+const settingIds=['outputName','addPageNo','addBlank','wmEnable','wmText','wmSize','wmOpacity','wmOpacityRange','wmAngle','wmColor','wmPos','wmLogoEnable','wmLogoWidth','wmLogoOpacity','wmLogoPos','qrEnable','qrText','qrPos','signText','useDrawSign','signWidth','signPos','ocrLang','batchWm','batchNo','batchQr','batchSign'];
 function collectSettings(){
   const settings={currentTab};
   for(const id of settingIds){const el=$(id);if(!el)continue;settings[id]=el.type==='checkbox'?el.checked:el.value}
@@ -1177,7 +1236,7 @@ function applySettings(settings={}){
 }
 function autosave(){
   try{
-    localStorage.setItem('pdfFusionPlusState',JSON.stringify({settings:collectSettings(),editorObjects,drawnSignDataUrl}));
+    localStorage.setItem('pdfFusionPlusState',JSON.stringify({settings:collectSettings(),editorObjects,drawnSignDataUrl,wmLogoDataUrl}));
   }catch(err){log('Không thể autosave: localStorage đầy hoặc bị chặn.')}
 }
 setInterval(autosave,30000);
@@ -1189,6 +1248,7 @@ $('loadProject').onclick=()=>{
     editorObjects.length=0;
     editorObjects.push(...(s.editorObjects||[]));
     drawnSignDataUrl=s.drawnSignDataUrl||'';
+    wmLogoDataUrl=s.wmLogoDataUrl||'';
     restoreSavedSignatureUI();
     renderEd();
     status('✅ Đã tải cấu hình project.');
@@ -1197,6 +1257,15 @@ $('loadProject').onclick=()=>{
 $('clearProject').onclick=()=>{localStorage.removeItem('pdfFusionPlusState');status('Đã xóa project')};
 
 // Lưu nhẹ khi thay đổi setting, không lưu file gốc vì File/Uint8Array không nên nhét vào localStorage.
+function syncWatermarkOpacity(fromRange){
+  const range=$('wmOpacityRange'),num=$('wmOpacity');
+  if(!range||!num)return;
+  if(fromRange)num.value=range.value;
+  else range.value=Math.max(0,Math.min(1,+num.value||0)).toFixed(2);
+}
+$('wmOpacityRange')?.addEventListener('input',()=>{syncWatermarkOpacity(true);autosave()});
+$('wmOpacity')?.addEventListener('input',()=>{syncWatermarkOpacity(false);autosave()});
+
 document.querySelectorAll('input,select,textarea').forEach(el=>{
   el.addEventListener('change',()=>autosave());
 });
@@ -1206,6 +1275,7 @@ try{
   if(saved.settings)applySettings(saved.settings);
   if(saved.editorObjects){editorObjects.length=0;editorObjects.push(...saved.editorObjects)}
   drawnSignDataUrl=saved.drawnSignDataUrl||'';
+  wmLogoDataUrl=saved.wmLogoDataUrl||'';
   restoreSavedSignatureUI();
 }catch{}
 
