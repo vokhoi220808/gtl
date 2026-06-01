@@ -13,6 +13,7 @@
 <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
 <script src="https://unpkg.com/mammoth/mammoth.browser.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
 <style>
 :root{
   --bg:#080810;
@@ -1493,19 +1494,44 @@ function updateQrUi(){
     if($('qrPayloadPreview'))$('qrPayloadPreview').textContent='Không tạo được payload QR: '+err.message;
   }
 }
-async function qrPng(text){
-  if(!window.QRCode||typeof QRCode.toDataURL!=='function')throw new Error('Thư viện QRCode chưa tải được.');
-  const data=await QRCode.toDataURL(String(text||'PDF Fusion'),{
-    margin:1,
-    width:260,
-    errorCorrectionLevel:$('qrEcc')?.value||'M'
-  });
-  return Uint8Array.from(atob(data.split(',')[1]),c=>c.charCodeAt(0));
+async function qrPng(text, opts = {}) {
+  const payload = String(text || 'PDF Fusion Smart Pro');
+  const width = opts.width || 220;
+
+  // Hỗ trợ thư viện qrcode-generator: global là qrcode, không phải QRCode
+  if (typeof window.qrcode === 'function') {
+    const qr = window.qrcode(0, 'M');
+    qr.addData(payload, 'Byte');
+    qr.make();
+
+    const count = qr.getModuleCount();
+    const margin = 4;
+    const cell = Math.max(2, Math.floor(width / (count + margin * 2)));
+    const size = cell * (count + margin * 2);
+
+    const canvas = document.createElement('canvas');
+    canvas.width = size;
+    canvas.height = size;
+
+    const ctx = canvas.getContext('2d');
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, size, size);
+
+    ctx.fillStyle = '#000000';
+    for (let row = 0; row < count; row++) {
+      for (let col = 0; col < count; col++) {
+        if (qr.isDark(row, col)) {
+          ctx.fillRect((col + margin) * cell, (row + margin) * cell, cell, cell);
+        }
+      }
+    }
+
+    const dataUrl = canvas.toDataURL('image/png');
+    return Uint8Array.from(atob(dataUrl.split(',')[1]), c => c.charCodeAt(0));
+  }
+
+  throw new Error('Thư viện QR chưa tải được. Hãy kiểm tra script qrcode-generator.');
 }
-$('qrGenId')?.addEventListener('click',()=>{ $('qrVerifyId').value=generateVerifyId(); updateQrUi(); autosave(); });
-['qrMode','qrText','qrVerifyId','qrSize','qrPages','qrPos','qrEcc','qrShowLabel'].forEach(id=>{
-  const el=$(id); if(el){ el.addEventListener('input',()=>{updateQrUi();autosave();}); el.addEventListener('change',()=>{updateQrUi();autosave();}); }
-});
 
 // ─── Project ─────────────────────────────────────────────────────────────────
 const settingIds=['outputName','addPageNo','addBlank','wmEnable','wmText','wmSize','wmOpacity','wmOpacityRange','wmAngle','wmColor','wmPos','wmLogoEnable','wmLogoWidth','wmLogoOpacity','wmLogoOpacityRange','wmLogoPos','wmLogoPages','wmLogoPreviewPage','wmLogoUsePreview','qrEnable','qrMode','qrVerifyId','qrText','qrPos','qrSize','qrEcc','qrPages','qrShowLabel','signText','useDrawSign','signWidth','signPos','ocrLang','batchWm','batchNo','batchQr','batchSign'];
