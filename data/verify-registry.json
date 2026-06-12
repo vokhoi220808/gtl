@@ -1,6 +1,6 @@
 {
   "version": "PFSP-VERIFY-REGISTRY-v1",
-  "updatedAt": "2026-06-12T15:44:05.065Z",
+  "updatedAt": "2026-06-12T15:46:50.769Z",
   "records": [
     {
       "id": "PFSP-20260612-303AQD",
@@ -21,7 +21,7 @@
       "note": "",
       "fingerprint": "7A9B28382336572A92A7343DC0EB8E32",
       "serverSignature": "60792a9e27d2da2363549aa804c7e46b5c8656a23d745a55e6165ca938808a1d",
-      "revokedAt": "2026-06-12T15:44:05.065Z",
+      "revokedAt": "2026-06-12T15:46:50.769Z",
       "revokeReason": "PDF không còn hợp lệ"
     },
     {
@@ -47,5 +47,5 @@
       "revokeReason": "revoked"
     }
   ],
-  "__githubSha": "2667c7486c324bdf1131b2cecb5832fbf03661bf"
+  "__githubSha": "5217f7ceccf0da7cd1012cdafdc1fdffbfd3e620"
 }
