@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#1a1a2e">
+<meta name="robots" content="noindex,nofollow">
+<title>Document Hash Verify | PDF Fusion Smart Pro</title>
+<meta name="description" content="Verify PDF Fusion Smart Pro QR IDs and compare uploaded PDF SHA-256 hashes with a verification link or certificate.">
+<link rel="manifest" href="./manifest.json">
+<link rel="icon" href="./favicon.svg" type="image/svg+xml">
+<style>
+:root{color-scheme:dark;--bg:#070711;--card:rgba(255,255,255,.075);--line:rgba(255,255,255,.15);--text:#f5f3ff;--muted:#c8c5e6;--good:#5af0b0;--warn:#ffd166;--bad:#ff6b88;--accent:#8b7cff;--cyan:#4df6d2}
+*{box-sizing:border-box}body{margin:0;min-height:100vh;background:radial-gradient(circle at 20% 0%,rgba(124,110,247,.35),transparent 35%),radial-gradient(circle at 90% 20%,rgba(224,64,251,.2),transparent 30%),var(--bg);color:var(--text);font-family:system-ui,-apple-system,Segoe UI,sans-serif;padding:24px}.wrap{width:min(1080px,100%);margin:auto;display:grid;gap:18px}.hero,.card{border:1px solid var(--line);border-radius:26px;background:linear-gradient(135deg,rgba(255,255,255,.11),rgba(255,255,255,.055));box-shadow:0 24px 80px rgba(0,0,0,.35);backdrop-filter:blur(14px)}.hero{padding:30px}.card{padding:22px}h1{margin:0 0 8px;font-size:clamp(30px,5vw,54px);letter-spacing:-.04em}h2{margin:0 0 12px;font-size:22px}p{line-height:1.65;color:var(--muted)}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}@media(max-width:780px){.grid{grid-template-columns:1fr}.kv{grid-template-columns:1fr!important}}.id{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:clamp(16px,3vw,28px);word-break:break-all;background:rgba(0,0,0,.25);border:1px solid var(--line);border-radius:18px;padding:16px;margin:14px 0}.kv{display:grid;grid-template-columns:170px 1fr;gap:8px 12px;font-size:14px}.kv b{color:#fff}.kv span{color:var(--muted);word-break:break-all}.status{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--line);border-radius:999px;padding:8px 12px;font-weight:800}.status.good{color:#042317;background:rgba(90,240,176,.18);border-color:rgba(90,240,176,.42)}.status.warn{color:#2b1d00;background:rgba(255,209,102,.18);border-color:rgba(255,209,102,.42)}.status.bad{color:#2b0009;background:rgba(255,107,136,.18);border-color:rgba(255,107,136,.42)}.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}.btn{border:0;border-radius:14px;padding:12px 16px;background:rgba(255,255,255,.11);color:white;text-decoration:none;font-weight:800;cursor:pointer}.btn.good{background:linear-gradient(135deg,#7c6ef7,#e040fb)}input,textarea{width:100%;border:1px solid var(--line);border-radius:14px;padding:12px 14px;background:rgba(0,0,0,.25);color:white;outline:none}textarea{min-height:108px;resize:vertical}.small{font-size:13px;color:#aaaad0}.mono{font-family:ui-monospace,SFMono-Regular,Consolas,monospace}.ok{color:var(--good)}.warnText{color:var(--warn)}.badText{color:var(--bad)}.cyan{color:var(--cyan)}.footer{opacity:.75;text-align:center;font-size:12px;padding:8px}.lang{margin-left:auto}.hidden{display:none!important}.drop{border:1px dashed rgba(77,246,210,.45);border-radius:18px;padding:18px;background:rgba(77,246,210,.06);transition:.15s}.drop.drag{background:rgba(77,246,210,.16);transform:translateY(-1px)}.pill{display:inline-flex;gap:6px;align-items:center;padding:6px 10px;border-radius:999px;border:1px solid var(--line);background:rgba(0,0,0,.18);font-size:12px;color:var(--muted)}.resultBox{border:1px solid var(--line);border-radius:16px;background:rgba(0,0,0,.18);padding:14px;margin-top:12px;word-break:break-all}.resultBox.good{border-color:rgba(90,240,176,.45)}.resultBox.bad{border-color:rgba(255,107,136,.45)}.resultBox.warn{border-color:rgba(255,209,102,.45)}code{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;color:#b8fff0}.steps{margin:0;padding-left:20px;color:var(--muted);line-height:1.7}.tabs{display:flex;gap:8px;flex-wrap:wrap}.tab{border:1px solid var(--line);background:rgba(0,0,0,.18);border-radius:999px;padding:8px 12px;color:var(--muted);cursor:pointer}.tab.active{color:#fff;background:rgba(124,110,247,.28)}
+</style>
+</head>
+<body>
+<main class="wrap">
+  <section class="hero">
+    <div class="row"><h1 data-i18n="title">Xác minh tài liệu PDF</h1><button class="btn lang" id="langBtn" type="button">English</button></div>
+    <p data-i18n="lead">Trang này kiểm tra QR Verification ID và so sánh SHA-256 của PDF tải lên với hash trong link hoặc file certificate.</p>
+    <div id="statusBadge" class="status warn">⏳ Đang kiểm tra...</div>
+    <div class="id" id="docId">Đang đọc mã...</div>
+    <div class="row">
+      <button class="btn good" id="copyBtn" type="button" data-i18n="copy">Copy mã</button>
+      <button class="btn" id="copyUrlBtn" type="button" data-i18n="copyUrl">Copy link xác minh</button>
+      <a class="btn" href="./index.html" data-i18n="openApp">Mở PDF Fusion</a>
+    </div>
+  </section>
+
+  <section class="grid">
+    <div class="card">
+      <h2 data-i18n="qrDetails">Chi tiết QR / Link</h2>
+      <div class="kv">
+        <b>ID</b><span id="kvId">-</span>
+        <b>Thời gian</b><span id="kvTs">-</span>
+        <b>Nguồn</b><span id="kvOrigin">-</span>
+        <b>QR Checksum</b><span id="kvCk">-</span>
+        <b>PDF SHA-256</b><span id="kvHash">-</span>
+        <b>Source hash</b><span id="kvSourceHash">-</span>
+        <b>Hash checksum</b><span id="kvHck">-</span>
+        <b>Kết quả</b><span id="kvResult">-</span>
+      </div>
+      <p class="small" data-i18n="legal">Lưu ý: kiểm tra hash xác nhận file PDF tải lên có khớp với hash/certificate bạn cung cấp. Không có backend/chữ ký số nên certificate/link phải đến từ nguồn bạn tin tưởng.</p>
+    </div>
+
+    <div class="card">
+      <h2 data-i18n="manual">Kiểm tra thủ công</h2>
+      <p class="small" data-i18n="manualHint">Dán link QR, link hash hoặc nội dung JSON certificate vào đây.</p>
+      <textarea id="manualInput" placeholder="https://.../verify.html?id=...&h=... hoặc JSON certificate"></textarea>
+      <div class="row" style="margin-top:10px"><button class="btn good" id="manualBtn" type="button" data-i18n="check">Kiểm tra</button><button class="btn" id="clearBtn" type="button" data-i18n="clear">Xóa</button></div>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2 data-i18n="hashVerify">So hash PDF thật</h2>
+    <div class="tabs"><button class="tab active" type="button" data-tab="pdf" data-i18n="uploadPdf">Upload PDF</button><button class="tab" type="button" data-tab="cert" data-i18n="uploadCert">Upload certificate</button><button class="tab" type="button" data-tab="qr" data-i18n="scanQr">Đọc QR ảnh</button></div>
+    <div id="tab-pdf" class="tabPanel">
+      <p class="small" data-i18n="pdfHint">Chọn PDF cần kiểm tra. Trang sẽ tính SHA-256 trong trình duyệt và so với hash trong link/certificate.</p>
+      <div class="drop" id="pdfDrop"><input id="pdfFile" type="file" accept="application/pdf,.pdf"></div>
+      <div id="pdfResult" class="resultBox warn">Chưa có PDF để kiểm tra.</div>
+    </div>
+    <div id="tab-cert" class="tabPanel hidden">
+      <p class="small" data-i18n="certHint">Tải file <code>.verify-certificate.json</code> do PDF Fusion tạo sau khi xuất PDF.</p>
+      <div class="drop" id="certDrop"><input id="certFile" type="file" accept="application/json,.json"></div>
+      <div id="certResult" class="resultBox warn">Chưa có certificate.</div>
+    </div>
+    <div id="tab-qr" class="tabPanel hidden">
+      <p class="small" data-i18n="scanHint">Tải ảnh chụp QR lên. Nếu trình duyệt hỗ trợ BarcodeDetector, trang sẽ tự đọc link QR.</p>
+      <input id="qrImage" type="file" accept="image/*">
+      <p id="scanResult" class="small mono"></p>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2 data-i18n="howTitle">Cách hiểu kết quả</h2>
+    <ol class="steps">
+      <li data-i18n="step1">QR checksum hợp lệ: link QR chưa bị sửa nhầm các trường ID/thời gian/nguồn.</li>
+      <li data-i18n="step2">PDF SHA-256 khớp: file PDF tải lên giống từng byte với file đã được ghi trong link/certificate.</li>
+      <li data-i18n="step3">Nếu hash lệch: PDF đã khác bản được chứng nhận, hoặc bạn đang dùng sai certificate/link.</li>
+    </ol>
+  </section>
+
+  <div class="footer">PDF Fusion Smart Pro Document Hash Verify v7.0.0</div>
+</main>
+<script>
+const $ = id => document.getElementById(id);
+const te = new TextEncoder();
+const dict = {
+  vi:{title:'Xác minh tài liệu PDF',lead:'Trang này kiểm tra QR Verification ID và so sánh SHA-256 của PDF tải lên với hash trong link hoặc file certificate.',copy:'Copy mã',copyUrl:'Copy link xác minh',openApp:'Mở PDF Fusion',qrDetails:'Chi tiết QR / Link',legal:'Lưu ý: kiểm tra hash xác nhận file PDF tải lên có khớp với hash/certificate bạn cung cấp. Không có backend/chữ ký số nên certificate/link phải đến từ nguồn bạn tin tưởng.',manual:'Kiểm tra thủ công',manualHint:'Dán link QR, link hash hoặc nội dung JSON certificate vào đây.',check:'Kiểm tra',clear:'Xóa',hashVerify:'So hash PDF thật',uploadPdf:'Upload PDF',uploadCert:'Upload certificate',scanQr:'Đọc QR ảnh',pdfHint:'Chọn PDF cần kiểm tra. Trang sẽ tính SHA-256 trong trình duyệt và so với hash trong link/certificate.',certHint:'Tải file .verify-certificate.json do PDF Fusion tạo sau khi xuất PDF.',scanHint:'Tải ảnh chụp QR lên. Nếu trình duyệt hỗ trợ BarcodeDetector, trang sẽ tự đọc link QR.',howTitle:'Cách hiểu kết quả',step1:'QR checksum hợp lệ: link QR chưa bị sửa nhầm các trường ID/thời gian/nguồn.',step2:'PDF SHA-256 khớp: file PDF tải lên giống từng byte với file đã được ghi trong link/certificate.',step3:'Nếu hash lệch: PDF đã khác bản được chứng nhận, hoặc bạn đang dùng sai certificate/link.'},
+  en:{title:'Verify PDF document',lead:'This page checks the QR Verification ID and compares an uploaded PDF SHA-256 hash with the hash stored in a verification link or certificate.',copy:'Copy ID',copyUrl:'Copy verify link',openApp:'Open PDF Fusion',qrDetails:'QR / Link details',legal:'Note: hash verification confirms that the uploaded PDF matches the hash/certificate you provide. Without a backend or digital signature, the certificate/link must come from a source you trust.',manual:'Manual check',manualHint:'Paste a QR link, hash link, or JSON certificate content here.',check:'Check',clear:'Clear',hashVerify:'Verify real PDF hash',uploadPdf:'Upload PDF',uploadCert:'Upload certificate',scanQr:'Read QR image',pdfHint:'Choose a PDF to verify. This page computes SHA-256 in your browser and compares it with the hash in the link/certificate.',certHint:'Upload the .verify-certificate.json generated by PDF Fusion after exporting the PDF.',scanHint:'Upload a QR screenshot. If the browser supports BarcodeDetector, this page will read the QR link automatically.',howTitle:'How to read the result',step1:'Valid QR checksum: the QR link fields ID/time/origin have not been accidentally changed.',step2:'Matching PDF SHA-256: the uploaded PDF is byte-for-byte identical to the file recorded in the link/certificate.',step3:'If the hash differs: the PDF is not the certified byte-identical file, or you are using the wrong certificate/link.'}
+};
+let lang = localStorage.getItem('pfspVerifyLang') || ((navigator.language||'').startsWith('vi')?'vi':'en');
+let currentParams = new URLSearchParams(location.search);
+let currentCert = null;
+let lastPdfHash = '';
+
+function applyLang(){document.querySelectorAll('[data-i18n]').forEach(el=>{const k=el.dataset.i18n;if(dict[lang][k])el.textContent=dict[lang][k]});$('langBtn').textContent=lang==='vi'?'English':'Tiếng Việt';document.documentElement.lang=lang;}
+$('langBtn').onclick=()=>{lang=lang==='vi'?'en':'vi';localStorage.setItem('pfspVerifyLang',lang);applyLang();renderCheck(currentParams);if(lastPdfHash)renderPdfCompare(lastPdfHash);};
+function hex(buffer){return Array.from(new Uint8Array(buffer)).map(b=>b.toString(16).padStart(2,'0')).join('');}
+async function sha256(data){
+  if(!(crypto && crypto.subtle)) throw new Error(lang==='vi'?'Trình duyệt chưa hỗ trợ SHA-256.':'This browser does not support SHA-256.');
+  const buf = data instanceof ArrayBuffer ? data : data instanceof Blob ? await data.arrayBuffer() : te.encode(String(data||'')).buffer;
+  return hex(await crypto.subtle.digest('SHA-256', buf));
+}
+function qrChecksum(id, ts, origin){
+  const input = `PFSP-VERIFY-v2|${String(id||'').trim()}|${String(ts||'').trim()}|${String(origin||'').trim()}`;
+  let h = 2166136261;
+  for (let i = 0; i < input.length; i++) { h ^= input.charCodeAt(i); h += (h << 1) + (h << 4) + (h << 7) + (h << 8) + (h << 24); }
+  return (h >>> 0).toString(36).toUpperCase().padStart(7, '0');
+}
+async function hashChecksum({id,ts,origin,hash,size,sourceHash}){
+  return (await sha256(`PFSP-DOC-HASH-v1|${id||''}|${ts||''}|${origin||''}|${hash||''}|${size||''}|${sourceHash||''}`)).slice(0,24).toUpperCase();
+}
+function paramsFromText(text){
+  const raw=String(text||'').trim();
+  if(!raw) return new URLSearchParams(location.search);
+  if(raw.startsWith('{')){
+    try{return paramsFromCertificate(JSON.parse(raw));}catch{}
+  }
+  try{ const u = new URL(raw, location.href); return u.searchParams; }catch{}
+  const p = new URLSearchParams(); p.set('id', raw); return p;
+}
+function paramsFromCertificate(cert){
+  currentCert = cert || null;
+  const p = new URLSearchParams();
+  if(!cert) return p;
+  p.set('id', cert.id || ''); p.set('ts', cert.createdAt || cert.ts || ''); p.set('o', cert.origin || '');
+  if(cert.sha256) p.set('h', cert.sha256); if(cert.size != null) p.set('size', String(cert.size));
+  if(cert.sourceBundleSha256) p.set('sh', cert.sourceBundleSha256);
+  if(cert.checksum) p.set('hck', cert.checksum);
+  if(cert.fileName) p.set('name', cert.fileName);
+  return p;
+}
+function getFields(p){
+  return {
+    id:(p.get('id')||'').trim(), ts:(p.get('ts')||'').trim(), origin:(p.get('o')||p.get('origin')||location.origin||'').trim(), ck:(p.get('ck')||p.get('sig')||'').trim().toUpperCase(),
+    hash:(p.get('h')||p.get('hash')||p.get('sha256')||'').trim().toLowerCase(), size:(p.get('size')||'').trim(), sourceHash:(p.get('sh')||p.get('sourceHash')||'').trim().toLowerCase(), hck:(p.get('hck')||p.get('hashChecksum')||'').trim().toUpperCase(), name:(p.get('name')||'').trim()
+  };
+}
+async function validateFromParams(p){
+  const f=getFields(p);
+  const idOk=/^PFSP-\d{8}-[A-Z0-9]{6,10}$/i.test(f.id) || /^PFSP-[A-Z0-9-]{6,}$/i.test(f.id);
+  let result=''; let level='warn'; let hashChecksumResult='';
+  if(!f.id){ result= lang==='vi' ? 'Không có ID trong QR/link.' : 'No ID found in the QR/link.'; level='bad'; }
+  else if(f.ck && f.ts){
+    const expected=qrChecksum(f.id,f.ts,f.origin);
+    if(expected===f.ck){ result= lang==='vi' ? 'QR checksum hợp lệ.' : 'Valid QR checksum.'; level='good'; }
+    else { result= lang==='vi' ? `QR checksum không khớp. Mã dự kiến: ${expected}` : `QR checksum mismatch. Expected: ${expected}`; level='bad'; }
+  } else if(idOk){ result= lang==='vi' ? 'ID hợp lệ định dạng. Link này có thể chưa có QR checksum.' : 'Valid ID format. This link may not include a QR checksum.'; level='warn'; }
+  else { result= lang==='vi' ? 'Có ID nhưng định dạng không chuẩn PFSP.' : 'ID found, but it is not in the standard PFSP format.'; level='warn'; }
+  if(f.hash && f.hck && f.ts){
+    try{
+      const expected = await hashChecksum({id:f.id,ts:f.ts,origin:f.origin,hash:f.hash,size:f.size,sourceHash:f.sourceHash});
+      hashChecksumResult = expected === f.hck ? (lang==='vi'?' Hash checksum hợp lệ.':' Hash checksum is valid.') : (lang==='vi'?` Hash checksum không khớp, dự kiến ${expected}.`:` Hash checksum mismatch, expected ${expected}.`);
+      if(expected !== f.hck) level='bad';
+    }catch(err){ hashChecksumResult = ' ' + (err?.message || err); }
+  }
+  return {...f,result: result + hashChecksumResult, level,idOk};
+}
+async function renderCheck(p=paramsFromText('')){
+  currentParams = p;
+  const r=await validateFromParams(p);
+  $('docId').textContent=r.id || (lang==='vi'?'Không có mã ID trong URL.':'No ID in the URL.');
+  $('kvId').textContent=r.id||'-'; $('kvTs').textContent=r.ts||'-'; $('kvOrigin').textContent=r.origin||'-'; $('kvCk').textContent=r.ck||'-'; $('kvHash').textContent=r.hash||'-'; $('kvSourceHash').textContent=r.sourceHash||'-'; $('kvHck').textContent=r.hck||'-'; $('kvResult').textContent=r.result;
+  const badge=$('statusBadge'); badge.className='status '+r.level; badge.textContent=(r.level==='good'?'✅ ':r.level==='bad'?'❌ ':'⚠️ ')+r.result;
+}
+function targetHash(){ return getFields(currentParams).hash || (currentCert && currentCert.sha256) || ''; }
+function targetSize(){ return getFields(currentParams).size || (currentCert && currentCert.size != null ? String(currentCert.size) : ''); }
+function renderPdfCompare(pdfHash, file){
+  const out=$('pdfResult'); const expected=targetHash();
+  if(!expected){ out.className='resultBox warn'; out.innerHTML=(lang==='vi'?'Đã tính SHA-256 của PDF, nhưng link/certificate chưa có hash để so sánh.':'PDF SHA-256 computed, but no hash is available in the link/certificate for comparison.') + `<br><code>${pdfHash}</code>`; return; }
+  const ok = pdfHash.toLowerCase() === expected.toLowerCase();
+  out.className='resultBox '+(ok?'good':'bad');
+  const sizeNote = file && targetSize() && String(file.size) !== String(targetSize()) ? `<br><span class="warnText">${lang==='vi'?'Dung lượng cũng khác certificate.':'File size also differs from the certificate.'}</span>` : '';
+  out.innerHTML = ok ? `${lang==='vi'?'✅ PDF khớp SHA-256. File chưa thay đổi so với certificate/link.':'✅ PDF matches SHA-256. The file is unchanged against the certificate/link.'}<br><code>${pdfHash}</code>` : `${lang==='vi'?'❌ PDF không khớp SHA-256. File đã khác bản được chứng nhận hoặc bạn dùng sai certificate/link.':'❌ PDF SHA-256 does not match. The file differs from the certified version or the wrong certificate/link is being used.'}<br>${lang==='vi'?'PDF tải lên':'Uploaded PDF'}: <code>${pdfHash}</code><br>${lang==='vi'?'Hash mong đợi':'Expected hash'}: <code>${expected}</code>${sizeNote}`;
+}
+async function handlePdfFile(file){
+  if(!file)return;
+  const out=$('pdfResult'); out.className='resultBox warn'; out.textContent=lang==='vi'?'Đang tính SHA-256 trong trình duyệt...':'Computing SHA-256 in the browser...';
+  try{ lastPdfHash=await sha256(file); renderPdfCompare(lastPdfHash,file); }
+  catch(err){ out.className='resultBox bad'; out.textContent=(lang==='vi'?'Không tính được hash: ':'Could not compute hash: ')+(err?.message||err); }
+}
+async function handleCertFile(file){
+  if(!file)return;
+  const out=$('certResult'); out.className='resultBox warn'; out.textContent=lang==='vi'?'Đang đọc certificate...':'Reading certificate...';
+  try{
+    const cert=JSON.parse(await file.text()); currentCert=cert; currentParams=paramsFromCertificate(cert); await renderCheck(currentParams);
+    out.className='resultBox good'; out.innerHTML=`${lang==='vi'?'✅ Đã nạp certificate.':'✅ Certificate loaded.'}<br>ID: <code>${String(cert.id||'-')}</code><br>SHA-256: <code>${String(cert.sha256||'-')}</code>`;
+    if(lastPdfHash) renderPdfCompare(lastPdfHash);
+  }catch(err){ out.className='resultBox bad'; out.textContent=(lang==='vi'?'Certificate không hợp lệ: ':'Invalid certificate: ')+(err?.message||err); }
+}
+$('copyBtn').onclick=async()=>{const id=$('kvId').textContent;try{await navigator.clipboard.writeText(id==='-'?'':id);$('docId').textContent=id+'  ✓'}catch{}};
+$('copyUrlBtn').onclick=async()=>{try{await navigator.clipboard.writeText(location.href);$('docId').textContent=($('kvId').textContent||'URL')+'  ✓'}catch{}};
+$('manualBtn').onclick=async()=>{currentCert=null; await renderCheck(paramsFromText($('manualInput').value)); if(lastPdfHash)renderPdfCompare(lastPdfHash);};
+$('clearBtn').onclick=async()=>{$('manualInput').value='';currentCert=null;currentParams=new URLSearchParams();await renderCheck(currentParams);if(lastPdfHash)renderPdfCompare(lastPdfHash);};
+$('pdfFile').addEventListener('change', ev=>handlePdfFile(ev.target.files&&ev.target.files[0]));
+$('certFile').addEventListener('change', ev=>handleCertFile(ev.target.files&&ev.target.files[0]));
+function wireDrop(id, cb){const box=$(id); if(!box)return; ['dragenter','dragover'].forEach(ev=>box.addEventListener(ev,e=>{e.preventDefault();box.classList.add('drag')})); ['dragleave','drop'].forEach(ev=>box.addEventListener(ev,e=>{e.preventDefault();box.classList.remove('drag')})); box.addEventListener('drop',e=>{const f=e.dataTransfer.files&&e.dataTransfer.files[0]; if(f) cb(f);});}
+wireDrop('pdfDrop', handlePdfFile); wireDrop('certDrop', handleCertFile);
+document.querySelectorAll('.tab').forEach(btn=>btn.onclick=()=>{document.querySelectorAll('.tab').forEach(b=>b.classList.remove('active'));btn.classList.add('active');document.querySelectorAll('.tabPanel').forEach(p=>p.classList.add('hidden'));$('tab-'+btn.dataset.tab).classList.remove('hidden');});
+$('qrImage').addEventListener('change', async ev=>{
+  const file=ev.target.files&&ev.target.files[0]; if(!file)return;
+  const out=$('scanResult'); out.textContent=lang==='vi'?'Đang đọc ảnh QR...':'Reading QR image...';
+  try{
+    if(!('BarcodeDetector' in window)) throw new Error(lang==='vi'?'BarcodeDetector chưa được trình duyệt này hỗ trợ.':'BarcodeDetector is not supported by this browser.');
+    const detector=new BarcodeDetector({formats:['qr_code']});
+    const bitmap=await createImageBitmap(file); const codes=await detector.detect(bitmap);
+    if(!codes.length) throw new Error(lang==='vi'?'Không thấy QR trong ảnh.':'No QR code found in the image.');
+    const value=codes[0].rawValue||''; out.textContent=value; $('manualInput').value=value; currentCert=null; await renderCheck(paramsFromText(value)); if(lastPdfHash)renderPdfCompare(lastPdfHash);
+  }catch(err){out.textContent=(lang==='vi'?'Không đọc được QR từ ảnh: ':'Could not read QR image: ')+(err?.message||err)+(lang==='vi'?'. Hãy mở link bằng camera điện thoại rồi copy URL vào ô kiểm tra thủ công.':'. Use your phone camera to open the QR link and paste the URL into manual check.');}
+});
+applyLang(); renderCheck();
+</script>
+<script src="./assets/pfsp-verify-registry-page.js" defer></script>
+</body>
+</html>
