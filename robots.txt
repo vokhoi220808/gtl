@@ -1,0 +1,16 @@
+User-agent: *
+Allow: /
+Allow: /ocr-pdf.html
+Allow: /sign-pdf.html
+Allow: /watermark-pdf.html
+Allow: /split-pdf.html
+Allow: /merge-pdf.html
+Allow: /compress-pdf.html
+
+Sitemap: https://gtl-roan.vercel.app/sitemap.xml
+Disallow: /verify.html
+Disallow: /offline.html
+
+# Advanced Suite public pages
+Allow: /privacy-center.html
+Allow: /en.html
