@@ -1,7 +1,27 @@
 {
   "version": "PFSP-VERIFY-REGISTRY-v1",
-  "updatedAt": "2026-06-12T15:36:38.023Z",
+  "updatedAt": "2026-06-12T15:41:08.815Z",
   "records": [
+    {
+      "id": "PFSP-20260612-303AQD",
+      "sha256": "f981f6964aee8b2da417a2133b0df2308f964666bc6e294666ba6edaf8b05de7",
+      "size": 188878,
+      "fileName": "li-chong-sai-ngu-5-7.pdf",
+      "mimeType": "application/pdf",
+      "createdAt": "2026-06-12T15:39:05Z",
+      "registeredAt": "2026-06-12T15:41:08.632Z",
+      "origin": "https://gtl-roan.vercel.app",
+      "app": "PDF Fusion Smart Pro",
+      "appVersion": "7.0.0-document-hash-verify",
+      "sourceBundleSha256": "20b630ee37c03c5c1d3ed0dbd82521373c5f00e3a004ab8a0c2c9c2363aa1654",
+      "checksum": "D9AD7EA32E18B2022F59E667",
+      "status": "active",
+      "expiresAt": "",
+      "registeredBy": "PDF Fusion Smart Pro UI",
+      "note": "",
+      "fingerprint": "7A9B28382336572A92A7343DC0EB8E32",
+      "serverSignature": "932b9c03396713a0ba04a9fb1b17078261fb3263088835d718609679de605820"
+    },
     {
       "id": "PFSP-20260612-2DWTF8",
       "sha256": "8a47771e85df0fe3b91818d3dd8338ddbd1064c51772604027c5f54999cc09be",
@@ -25,5 +45,5 @@
       "revokeReason": "revoked"
     }
   ],
-  "__githubSha": "478a66dbcc26031e1611c0c9f2bd13b4becd9655"
+  "__githubSha": "84473c14bbba7aadf55b1d7e4680561f32c9d737"
 }
