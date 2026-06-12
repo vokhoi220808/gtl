@@ -1,0 +1,19 @@
+{
+  "name": "pdf-fusion-smart-pro",
+  "version": "6.0.0",
+  "private": true,
+  "description": "Static browser-first PDF toolkit: merge, split, OCR, sign, watermark, QR and batch PDF processing.",
+  "scripts": {
+    "start": "python -m http.server 5500",
+    "serve": "python -m http.server 5500"
+  },
+  "keywords": [
+    "pdf",
+    "pwa",
+    "ocr",
+    "watermark",
+    "signature",
+    "frontend"
+  ],
+  "license": "MIT"
+}
