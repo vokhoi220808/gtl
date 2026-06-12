@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex,nofollow">
+<meta name="theme-color" content="#07111f">
+<title>Admin Verify Dashboard | PDF Fusion Smart Pro</title>
+<meta name="description" content="Admin dashboard for PDF Fusion Smart Pro Trusted Verify Registry.">
+<link rel="icon" href="./favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="./assets/pfsp-verify-final.css">
+<style>body{margin:0;min-height:100vh;background:radial-gradient(circle at 20% 0%,rgba(56,189,248,.16),transparent 30%),#07111f;color:#e5edff;font-family:system-ui,-apple-system,Segoe UI,sans-serif;padding:24px}.wrap{width:min(1180px,100%);margin:auto}.top{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}h1{margin:0;font-size:clamp(30px,5vw,52px);letter-spacing:-.04em}p{color:#b6c6db;line-height:1.65}input,select,textarea{border:1px solid rgba(148,163,184,.30);border-radius:14px;padding:11px 12px;background:rgba(2,6,23,.56);color:#fff}.search{min-width:260px}.muted{color:#94a3b8;font-size:12px}.status-dot{display:inline-block;width:10px;height:10px;border-radius:999px;background:#f59e0b}.status-dot.good{background:#22c55e}.status-dot.bad{background:#ef4444}</style>
+</head>
+<body>
+<main class="wrap">
+  <section class="pfsp-final-shell">
+    <div class="top"><div><h1>Admin Verify Dashboard</h1><p>Quản trị registry: xem ID, tìm hash, kiểm tra API, thu hồi/khôi phục, backup, audit log và integrity. Không lưu file PDF, chỉ lưu metadata.</p></div><a class="pfsp-final-chip" href="./index.html">← Về app</a></div>
+    <div class="pfsp-final-actions"><input id="secret" type="password" placeholder="VERIFY_ADMIN_SECRET"><input id="query" class="search" placeholder="Tìm ID / SHA-256 / tên file"><button id="health" class="primary">Health</button><button id="list">Load records</button><button id="integrity">Integrity</button><button id="backup">Backup JSON</button></div>
+    <div id="result" class="pfsp-final-result warn"><div class="pfsp-final-verdict">Chưa kiểm tra</div><div class="pfsp-final-message">Nhập admin secret rồi bấm Health hoặc Load records.</div></div>
+    <textarea id="dump" class="pfsp-final-textarea" readonly></textarea>
+  </section>
+  <section class="pfsp-final-shell"><div class="pfsp-final-head"><div class="pfsp-final-title"><div class="pfsp-final-badge">📚</div><div><h2>Records</h2><p>Danh sách registry lấy từ API. Bấm revoke/restore để đổi trạng thái.</p></div></div></div><div style="overflow:auto"><table class="pfsp-final-table"><thead><tr><th>ID</th><th>SHA-256</th><th>Status</th><th>Created</th><th>Actions</th></tr></thead><tbody id="rows"><tr><td colspan="5">Chưa tải records.</td></tr></tbody></table></div></section>
+</main>
+<script src="./assets/pfsp-admin-verify.js" defer></script>
+</body>
+</html>
