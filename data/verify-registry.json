@@ -1,6 +1,6 @@
 {
   "version": "PFSP-VERIFY-REGISTRY-v1",
-  "updatedAt": "2026-06-12T15:41:08.815Z",
+  "updatedAt": "2026-06-12T15:44:05.065Z",
   "records": [
     {
       "id": "PFSP-20260612-303AQD",
@@ -15,12 +15,14 @@
       "appVersion": "7.0.0-document-hash-verify",
       "sourceBundleSha256": "20b630ee37c03c5c1d3ed0dbd82521373c5f00e3a004ab8a0c2c9c2363aa1654",
       "checksum": "D9AD7EA32E18B2022F59E667",
-      "status": "active",
+      "status": "revoked",
       "expiresAt": "",
       "registeredBy": "PDF Fusion Smart Pro UI",
       "note": "",
       "fingerprint": "7A9B28382336572A92A7343DC0EB8E32",
-      "serverSignature": "932b9c03396713a0ba04a9fb1b17078261fb3263088835d718609679de605820"
+      "serverSignature": "60792a9e27d2da2363549aa804c7e46b5c8656a23d745a55e6165ca938808a1d",
+      "revokedAt": "2026-06-12T15:44:05.065Z",
+      "revokeReason": "PDF không còn hợp lệ"
     },
     {
       "id": "PFSP-20260612-2DWTF8",
@@ -45,5 +47,5 @@
       "revokeReason": "revoked"
     }
   ],
-  "__githubSha": "84473c14bbba7aadf55b1d7e4680561f32c9d737"
+  "__githubSha": "2667c7486c324bdf1131b2cecb5832fbf03661bf"
 }
