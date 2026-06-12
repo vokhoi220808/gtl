@@ -1,6 +1,6 @@
 {
   "version": "PFSP-VERIFY-REGISTRY-v1",
-  "updatedAt": "2026-06-12T15:36:01.500Z",
+  "updatedAt": "2026-06-12T15:36:38.023Z",
   "records": [
     {
       "id": "PFSP-20260612-2DWTF8",
@@ -15,13 +15,15 @@
       "appVersion": "7.0.0-document-hash-verify",
       "sourceBundleSha256": "91130c0472df140c517f96dec221e732c76ea797958098417f2d9c182eab0202",
       "checksum": "5E2B54FA6EF158E7AB0FB3CE",
-      "status": "active",
+      "status": "revoked",
       "expiresAt": "",
       "registeredBy": "PDF Fusion Smart Pro UI",
       "note": "",
       "fingerprint": "8993EC9F23168BB9F16CCA6A65CBCAC5",
-      "serverSignature": "8f123225b6888589782e50bfb8d1ce606f6783e93f0ede55a06487455e8252f9"
+      "serverSignature": "564f58cb7954d20967afd5c580403b7a6d309dd00170b049d1314de9f0ccd49f",
+      "revokedAt": "2026-06-12T15:36:38.023Z",
+      "revokeReason": "revoked"
     }
   ],
-  "__githubSha": "7cabd0178539a7197d9e79a5b64c64eac5984607"
+  "__githubSha": "478a66dbcc26031e1611c0c9f2bd13b4becd9655"
 }
