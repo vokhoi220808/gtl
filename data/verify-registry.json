@@ -1,5 +1,27 @@
 {
   "version": "PFSP-VERIFY-REGISTRY-v1",
-  "updatedAt": "2026-06-12T00:00:00Z",
-  "records": []
+  "updatedAt": "2026-06-12T15:36:01.500Z",
+  "records": [
+    {
+      "id": "PFSP-20260612-2DWTF8",
+      "sha256": "8a47771e85df0fe3b91818d3dd8338ddbd1064c51772604027c5f54999cc09be",
+      "size": 755405,
+      "fileName": "pdf-fusion.pdf",
+      "mimeType": "application/pdf",
+      "createdAt": "2026-06-12T14:39:49Z",
+      "registeredAt": "2026-06-12T15:36:01.400Z",
+      "origin": "https://gtl-roan.vercel.app",
+      "app": "PDF Fusion Smart Pro",
+      "appVersion": "7.0.0-document-hash-verify",
+      "sourceBundleSha256": "91130c0472df140c517f96dec221e732c76ea797958098417f2d9c182eab0202",
+      "checksum": "5E2B54FA6EF158E7AB0FB3CE",
+      "status": "active",
+      "expiresAt": "",
+      "registeredBy": "PDF Fusion Smart Pro UI",
+      "note": "",
+      "fingerprint": "8993EC9F23168BB9F16CCA6A65CBCAC5",
+      "serverSignature": "8f123225b6888589782e50bfb8d1ce606f6783e93f0ede55a06487455e8252f9"
+    }
+  ],
+  "__githubSha": "7cabd0178539a7197d9e79a5b64c64eac5984607"
 }
