@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex,nofollow">
+<meta name="theme-color" content="#07111f">
+<title>Verify Admin Console | PDF Fusion Smart Pro</title>
+<meta name="description" content="Admin console quản trị PDF Fusion Smart Pro Trusted Verify Registry: health, records, revoke, restore, expiry, audit, backup.">
+<link rel="icon" href="./favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="./assets/pfsp-verify-final.css">
+</head>
+<body class="pfsp-v11-page">
+<main class="pfsp-v11-wrap">
+  <section class="pfsp-v11-hero">
+    <div class="pfsp-v11-top">
+      <div class="pfsp-v11-brand">
+        <div class="pfsp-v11-logo">🔐</div>
+        <div>
+          <div class="pfsp-v11-kicker">Verify System v11 · Admin Only</div>
+          <h1>Verify Admin Console</h1>
+          <p>Quản trị registry: health, integrity, tìm record, đăng ký thủ công, thu hồi, khôi phục, đặt hạn, xem audit log và tải backup JSON.</p>
+        </div>
+      </div>
+      <div class="pfsp-v11-actions">
+        <a class="pfsp-v11-btn ghost" href="./index.html">← Về app</a>
+        <a class="pfsp-v11-btn ghost" href="./verify.html">Mở trang verify</a>
+      </div>
+    </div>
+    <div class="pfsp-v11-grid" style="margin-top:18px">
+      <input id="secret" class="pfsp-v11-input" type="password" autocomplete="off" placeholder="PFSP_VERIFY_ADMIN_SECRET">
+      <div class="pfsp-v11-actions" style="margin-top:0">
+        <button id="saveSecret" class="pfsp-v11-btn" type="button">Nhớ tạm trong trình duyệt</button>
+        <button id="clearSecret" class="pfsp-v11-btn danger" type="button">Xóa secret</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="pfsp-v11-grid three">
+    <div class="pfsp-v11-card"><div class="pfsp-v11-metric"><b id="mRecords">-</b><span>Tổng records</span></div></div>
+    <div class="pfsp-v11-card"><div class="pfsp-v11-metric"><b id="mSigned">-</b><span>Signed records</span></div></div>
+    <div class="pfsp-v11-card"><div class="pfsp-v11-metric"><b id="mIntegrity">-</b><span>Integrity status</span></div></div>
+  </section>
+
+  <section class="pfsp-v11-card">
+    <h2>Điều khiển nhanh</h2>
+    <div class="pfsp-v11-actions">
+      <button id="health" class="pfsp-v11-btn primary" type="button">Health</button>
+      <button id="integrity" class="pfsp-v11-btn" type="button">Integrity</button>
+      <button id="audit" class="pfsp-v11-btn" type="button">Audit log</button>
+      <button id="backup" class="pfsp-v11-btn good" type="button">Tạo backup JSON</button>
+      <button id="downloadDump" class="pfsp-v11-btn" type="button">Tải nội dung dump</button>
+    </div>
+    <div id="result" class="pfsp-v11-result warn"><div class="pfsp-v11-verdict">Chưa kiểm tra</div><div class="pfsp-v11-message">Nhập admin secret rồi bấm Health hoặc Load records.</div></div>
+    <textarea id="dump" class="pfsp-v11-textarea" readonly placeholder="API response / backup JSON sẽ hiện ở đây"></textarea>
+  </section>
+
+  <section class="pfsp-v11-grid sidebar">
+    <div class="pfsp-v11-card">
+      <h2>Records</h2>
+      <div class="pfsp-v11-actions">
+        <input id="query" class="pfsp-v11-input" style="max-width:360px" placeholder="Tìm ID / SHA-256 / tên file / note">
+        <select id="statusFilter" class="pfsp-v11-select" style="max-width:190px"><option value="">Mọi trạng thái</option><option value="active">active</option><option value="revoked">revoked</option></select>
+        <button id="list" class="pfsp-v11-btn primary" type="button">Load records</button>
+      </div>
+      <div class="pfsp-v11-table-scroll">
+        <table class="pfsp-final-table">
+          <thead><tr><th>ID</th><th>SHA-256</th><th>Status</th><th>Registered</th><th>Actions</th></tr></thead>
+          <tbody id="rows"><tr><td colspan="5">Chưa tải records.</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+    <aside class="pfsp-v11-card">
+      <h2>Đăng ký thủ công</h2>
+      <p class="pfsp-v11-small">Dùng khi auto-register lỗi hoặc cần nhập certificate có sẵn. ID và SHA-256 là bắt buộc.</p>
+      <div class="pfsp-v11-actions" style="display:grid">
+        <input id="regId" class="pfsp-v11-input" placeholder="PFSP-YYYYMMDD-ABC123">
+        <input id="regHash" class="pfsp-v11-input" placeholder="SHA-256 64 ký tự">
+        <input id="regName" class="pfsp-v11-input" placeholder="Tên file PDF">
+        <input id="regSize" class="pfsp-v11-input" placeholder="Dung lượng byte">
+        <input id="regOrigin" class="pfsp-v11-input" placeholder="Origin / domain tạo PDF">
+        <input id="regExpiry" class="pfsp-v11-input" type="datetime-local" placeholder="Hết hạn">
+        <textarea id="regNote" class="pfsp-v11-textarea" placeholder="Ghi chú nội bộ"></textarea>
+        <label class="pfsp-v11-small"><input id="regOverwrite" type="checkbox"> Cho phép overwrite nếu ID đã tồn tại</label>
+        <button id="register" class="pfsp-v11-btn good" type="button">Đăng ký record</button>
+      </div>
+    </aside>
+  </section>
+
+  <section class="pfsp-v11-card">
+    <h2>Audit log</h2>
+    <div class="pfsp-v11-table-scroll">
+      <table class="pfsp-final-table">
+        <thead><tr><th>Time</th><th>Action</th><th>ID</th><th>Result</th><th>Origin</th></tr></thead>
+        <tbody id="auditRows"><tr><td colspan="5">Chưa tải audit log.</td></tr></tbody>
+      </table>
+    </div>
+  </section>
+</main>
+<script src="./assets/pfsp-admin-verify.js" defer></script>
+</body>
+</html>

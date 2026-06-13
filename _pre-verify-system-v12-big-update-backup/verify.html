@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#07111f">
+<meta name="robots" content="noindex,nofollow">
+<title>Trusted PDF Verify | PDF Fusion Smart Pro</title>
+<meta name="description" content="Xác minh Verify ID, SHA-256 PDF, certificate server-signed, trạng thái revoke/expiry trong Trusted Verify Registry của PDF Fusion Smart Pro.">
+<link rel="manifest" href="./manifest.json">
+<link rel="icon" href="./favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="./assets/pfsp-verify-final.css">
+</head>
+<body class="pfsp-v11-page">
+<main class="pfsp-v11-wrap">
+  <section class="pfsp-v11-hero">
+    <div class="pfsp-v11-top">
+      <div class="pfsp-v11-brand">
+        <div class="pfsp-v11-logo">🛡️</div>
+        <div>
+          <div class="pfsp-v11-kicker">PDF Fusion Smart Pro · Verify System v11</div>
+          <h1>Xác minh tài liệu PDF</h1>
+          <p>Kiểm tra Verify ID trên server registry, so sánh SHA-256 của PDF thật, xác nhận chữ ký server, trạng thái thu hồi và thời hạn certificate.</p>
+        </div>
+      </div>
+      <div class="pfsp-v11-actions">
+        <a class="pfsp-v11-btn ghost" href="./index.html">← Mở app</a>
+        <a class="pfsp-v11-btn ghost" href="./verify-registry.html">Cách hoạt động</a>
+      </div>
+    </div>
+    <div id="statusBadge" class="pfsp-v11-status warn">⏳ Đang kiểm tra registry...</div>
+    <div id="docId" class="pfsp-v11-docid">Đang đọc Verify ID...</div>
+    <div class="pfsp-v11-actions">
+      <button id="copyBtn" class="pfsp-v11-btn primary" type="button">Copy Verify ID</button>
+      <button id="copyUrlBtn" class="pfsp-v11-btn" type="button">Copy link</button>
+      <button id="downloadCertBtn" class="pfsp-v11-btn good" type="button">Tải certificate</button>
+    </div>
+  </section>
+
+  <section class="pfsp-v11-grid sidebar">
+    <div class="pfsp-v11-card">
+      <h2>Kết quả Trusted Registry</h2>
+      <div id="trustedResult" class="pfsp-v11-result warn">
+        <div class="pfsp-v11-verdict">Đang kiểm tra...</div>
+        <div class="pfsp-v11-message">Trang sẽ tự đọc ID/hash từ URL, sau đó hỏi API registry.</div>
+      </div>
+      <div class="pfsp-v11-kv">
+        <b>Verify ID</b><span id="kvId">-</span>
+        <b>Registry SHA-256</b><span id="kvHash">-</span>
+        <b>PDF upload SHA-256</b><span id="kvUploadHash">-</span>
+        <b>File size</b><span id="kvSize">-</span>
+        <b>Status</b><span id="kvStatus">-</span>
+        <b>Expires at</b><span id="kvExpires">-</span>
+        <b>Signature</b><span id="kvSignature">-</span>
+        <b>Registry integrity</b><span id="kvIntegrity">-</span>
+      </div>
+    </div>
+
+    <aside class="pfsp-v11-card">
+      <h2>API Health</h2>
+      <p class="pfsp-v11-small">Dùng để kiểm tra deploy Vercel đã có signing secret, admin secret, GitHub registry và allowlist origin chưa.</p>
+      <div id="healthBox" class="pfsp-v11-result warn">Chưa tải health.</div>
+      <div class="pfsp-v11-actions">
+        <button id="healthBtn" class="pfsp-v11-btn" type="button">Kiểm tra API</button>
+      </div>
+    </aside>
+  </section>
+
+  <section class="pfsp-v11-card">
+    <h2>So hash PDF thật</h2>
+    <p class="pfsp-v11-small">PDF được hash ngay trong trình duyệt bằng SHA-256. File không bị upload lên server.</p>
+    <div class="pfsp-v11-tabs">
+      <button class="pfsp-v11-tab active" type="button" data-tab="pdf">Upload PDF</button>
+      <button class="pfsp-v11-tab" type="button" data-tab="cert">Upload certificate JSON</button>
+      <button class="pfsp-v11-tab" type="button" data-tab="manual">Dán link / JSON</button>
+      <button class="pfsp-v11-tab" type="button" data-tab="qr">Đọc ảnh QR</button>
+    </div>
+
+    <div id="tab-pdf" class="pfsp-v11-panel">
+      <div id="pdfDrop" class="pfsp-v11-drop"><input id="pdfFile" class="pfsp-v11-input" type="file" accept="application/pdf,.pdf"></div>
+      <div id="pdfResult" class="pfsp-v11-result warn">Chưa có PDF để kiểm tra.</div>
+    </div>
+
+    <div id="tab-cert" class="pfsp-v11-panel hidden">
+      <div id="certDrop" class="pfsp-v11-drop"><input id="certFile" class="pfsp-v11-input" type="file" accept="application/json,.json"></div>
+      <div id="certResult" class="pfsp-v11-result warn">Chưa có certificate.</div>
+    </div>
+
+    <div id="tab-manual" class="pfsp-v11-panel hidden">
+      <textarea id="manualInput" class="pfsp-v11-textarea" placeholder="Dán verify URL, Verify ID, SHA-256 hoặc JSON certificate ở đây"></textarea>
+      <div class="pfsp-v11-actions">
+        <button id="manualBtn" class="pfsp-v11-btn primary" type="button">Kiểm tra</button>
+        <button id="clearBtn" class="pfsp-v11-btn" type="button">Xóa</button>
+      </div>
+    </div>
+
+    <div id="tab-qr" class="pfsp-v11-panel hidden">
+      <input id="qrImage" class="pfsp-v11-input" type="file" accept="image/*">
+      <div id="scanResult" class="pfsp-v11-result warn">Tải ảnh QR lên. Nếu trình duyệt hỗ trợ BarcodeDetector, trang sẽ đọc link tự động.</div>
+    </div>
+  </section>
+
+  <section class="pfsp-v11-grid three">
+    <div class="pfsp-v11-card"><h2>✅ GENUINE</h2><p>ID tồn tại, PDF SHA-256 khớp registry, certificate chưa bị thu hồi/hết hạn và chữ ký server hợp lệ.</p></div>
+    <div class="pfsp-v11-card"><h2>⚠️ NEEDS FILE</h2><p>ID có trong registry nhưng chưa có PDF/hash để so sánh. Hãy upload PDF thật hoặc cung cấp SHA-256.</p></div>
+    <div class="pfsp-v11-card"><h2>❌ FAKE / MODIFIED</h2><p>ID tồn tại nhưng hash PDF không khớp. File có thể đã bị sửa, hoặc bạn đang dùng nhầm certificate/link.</p></div>
+  </section>
+
+  <div class="pfsp-v11-footer">PDF Fusion Smart Pro Trusted Verify System v11 · metadata only · no PDF upload</div>
+</main>
+<script src="./assets/pfsp-verify-final-page.js" defer></script>
+</body>
+</html>

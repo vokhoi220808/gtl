@@ -1,0 +1,22 @@
+{
+  "name": "pdf-fusion-smart-pro",
+  "version": "11.0.0-verify-redesign",
+  "private": true,
+  "description": "Browser-first PDF toolkit with Verify System v11: server-signed registry, short QR, auto-register, audit log, revoke/restore/expiry, admin console, PWA, OCR and PDF utilities.",
+  "scripts": {
+    "start": "python -m http.server 5500",
+    "serve": "python -m http.server 5500",
+    "check:js": "node --check api/verify.js && find assets -name '*.js' -maxdepth 1 -print0 | xargs -0 -n1 node --check"
+  },
+  "keywords": [
+    "pdf",
+    "pwa",
+    "ocr",
+    "watermark",
+    "signature",
+    "verify",
+    "sha256",
+    "serverless"
+  ],
+  "license": "MIT"
+}
