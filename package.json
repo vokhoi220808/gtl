@@ -1,0 +1,27 @@
+{
+  "name": "pdf-fusion-smart-pro",
+  "version": "12.0.0-verify-big-update",
+  "private": true,
+  "description": "Browser-first PDF toolkit with Verify System v12 BIG UPDATE: server-signed registry, trust score, batch verify, bulk register, hash lookup, history timeline, suspend/revoke/restore/expiry, admin diagnostics, PWA, OCR and PDF utilities.",
+  "scripts": {
+    "start": "python -m http.server 5500",
+    "serve": "python -m http.server 5500",
+    "check:api": "node --check api/verify.js",
+    "check:assets": "find assets -maxdepth 1 -name '*.js' -print0 | xargs -0 -n1 node --check",
+    "check:js": "npm run check:api && npm run check:assets",
+    "verify:health:local": "node -e \"const h=require('./api/verify.js'); const req={method:'GET',url:'/api/verify?action=health',headers:{},socket:{}}; const res={setHeader(){},end(x){console.log(x)},set statusCode(v){this._s=v},get statusCode(){return this._s}}; h(req,res)\""
+  },
+  "keywords": [
+    "pdf",
+    "pwa",
+    "ocr",
+    "watermark",
+    "signature",
+    "verify",
+    "sha256",
+    "serverless",
+    "trusted-registry",
+    "vercel"
+  ],
+  "license": "MIT"
+}
