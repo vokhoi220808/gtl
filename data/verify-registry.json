@@ -1,7 +1,7 @@
 {
   "version": "PFSP-VERIFY-REGISTRY-v5",
   "schemaVersion": 5,
-  "updatedAt": "2026-06-13T11:13:15.009Z",
+  "updatedAt": "2026-06-13T11:20:19.755Z",
   "settings": {
     "shortQr": true,
     "serverSigned": true,
@@ -28,6 +28,74 @@
     "documentInformationSupported": true
   },
   "records": [
+    {
+      "id": "PFSP-20260613-F7NX3A",
+      "sha256": "b8a2cbbb2256e2678f1865cb17ba67a1a88767dfc4b86f39aba26d1818cb0eef",
+      "size": 753878,
+      "fileName": "pdf-fusion.pdf",
+      "mimeType": "application/pdf",
+      "createdAt": "2026-06-13T11:20:19.000Z",
+      "registeredAt": "2026-06-13T11:20:19.753Z",
+      "updatedAt": "2026-06-13T11:20:19.753Z",
+      "origin": "https://gtl-roan.vercel.app",
+      "app": "PDF Fusion Smart Pro",
+      "appVersion": "14.4.0-enterprise-trust-suite",
+      "sourceBundleSha256": "",
+      "checksum": "B56F2CB5411D6335A2048AFB",
+      "status": "active",
+      "expiresAt": "",
+      "registeredBy": "auto-qr-export-v12",
+      "registrationMode": "auto-qr-export",
+      "owner": "Vo Minh Khoi",
+      "project": "Nội dung",
+      "documentTitle": "VAT LI",
+      "tags": [],
+      "note": "Auto registered when PDF Fusion exported a QR Verify PDF.",
+      "policy": {
+        "retention": "",
+        "visibility": "public-metadata"
+      },
+      "documentInfo": {},
+      "userInfo": {},
+      "extraInfo": {},
+      "signatureVersion": "PFSP-SERVER-SIGNED-CERT-v5",
+      "keyId": "",
+      "signatureAlgorithm": "HMAC-SHA256",
+      "revokedAt": "",
+      "restoredAt": "",
+      "suspendedAt": "",
+      "revokeReason": "",
+      "suspendReason": "",
+      "fingerprint": "69689BFC9CE3FFC01FCF561DBAB0415F",
+      "shortVerifyUrl": "https://gtl-roan.vercel.app/verify.html?id=PFSP-20260613-F7NX3A",
+      "verifyUrl": "https://gtl-roan.vercel.app/verify.html?id=PFSP-20260613-F7NX3A&sha256=b8a2cbbb2256e2678f1865cb17ba67a1a88767dfc4b86f39aba26d1818cb0eef&size=753878",
+      "certificateSignature": "77e770890c9b724ee2658b4b93716d4f75cda073f837dca7d9f3c277f9fab8f1",
+      "serverSignature": "77e770890c9b724ee2658b4b93716d4f75cda073f837dca7d9f3c277f9fab8f1",
+      "history": [
+        {
+          "time": "2026-06-13T11:20:19.755Z",
+          "action": "auto-register",
+          "actor": "public-auto-register",
+          "result": "AUTO_REGISTERED",
+          "message": "",
+          "sha256": "b8a2cbbb2256e2678f1865cb17ba67a1a88767dfc4b86f39aba26d1818cb0eef",
+          "status": "active",
+          "origin": "https://gtl-roan.vercel.app"
+        },
+        {
+          "time": "2026-06-13T11:20:19.755Z",
+          "action": "created",
+          "actor": "auto-qr-export-v12",
+          "result": "CREATED",
+          "message": "",
+          "sha256": "b8a2cbbb2256e2678f1865cb17ba67a1a88767dfc4b86f39aba26d1818cb0eef",
+          "status": "active",
+          "origin": "https://gtl-roan.vercel.app"
+        }
+      ],
+      "clientIpHash": "91844C3DE8832ABAEFDC2743",
+      "userAgentHash": "8F5A02445266838A0004FC48"
+    },
     {
       "id": "PFSP-20260613-TRAPB4",
       "sha256": "4f0ad5890ac285943d824659be1e4b0782fa7e509bf01c8b02499c9fde1ed6af",
@@ -73,7 +141,7 @@
       "serverSignature": "846bec98c3d37b31891fc35f75e1ea0ad729e55800f180a7e65bed1508de1ffe",
       "history": [
         {
-          "time": "2026-06-13T11:13:15.010Z",
+          "time": "2026-06-13T11:20:19.755Z",
           "action": "auto-register",
           "actor": "public-auto-register",
           "result": "AUTO_REGISTERED",
@@ -83,7 +151,7 @@
           "origin": "https://gtl-roan.vercel.app"
         },
         {
-          "time": "2026-06-13T11:13:15.010Z",
+          "time": "2026-06-13T11:20:19.755Z",
           "action": "created",
           "actor": "auto-qr-export-v12",
           "result": "CREATED",
@@ -141,7 +209,7 @@
       "serverSignature": "f066b9624ad5d969cb8824a2a1beedbee9d72db248d58203ee7ec7af82ada1d4",
       "history": [
         {
-          "time": "2026-06-13T11:13:15.009Z",
+          "time": "2026-06-13T11:20:19.755Z",
           "action": "auto-register",
           "actor": "public-auto-register",
           "result": "AUTO_REGISTERED",
@@ -151,7 +219,7 @@
           "origin": "https://gtl-roan.vercel.app"
         },
         {
-          "time": "2026-06-13T11:13:15.009Z",
+          "time": "2026-06-13T11:20:19.755Z",
           "action": "created",
           "actor": "auto-qr-export-v12",
           "result": "CREATED",
@@ -209,7 +277,7 @@
       "serverSignature": "10152b6b56b2b53a62a1630baca0d67e2b6f2939dde82c3e362927759e10e8fa",
       "history": [
         {
-          "time": "2026-06-13T11:13:15.010Z",
+          "time": "2026-06-13T11:20:19.755Z",
           "action": "auto-register",
           "actor": "public-auto-register",
           "result": "AUTO_REGISTERED",
@@ -219,7 +287,7 @@
           "origin": "https://gtl-roan.vercel.app"
         },
         {
-          "time": "2026-06-13T11:13:15.010Z",
+          "time": "2026-06-13T11:20:19.755Z",
           "action": "created",
           "actor": "auto-qr-export-v12",
           "result": "CREATED",
@@ -234,6 +302,20 @@
     }
   ],
   "auditLog": [
+    {
+      "time": "2026-06-13T11:20:19.754Z",
+      "action": "auto-register",
+      "id": "PFSP-20260613-F7NX3A",
+      "sha256": "b8a2cbbb2256e2678f1865cb17ba67a1a88767dfc4b86f39aba26d1818cb0eef",
+      "result": "AUTO_REGISTERED",
+      "ok": true,
+      "message": "Auto-registered on PDF export.",
+      "actor": "",
+      "clientIpHash": "91844C3DE8832ABAEFDC2743",
+      "userAgentHash": "8F5A02445266838A0004FC48",
+      "requestId": "",
+      "origin": "https://gtl-roan.vercel.app"
+    },
     {
       "time": "2026-06-13T11:13:15.009Z",
       "action": "auto-register",
@@ -280,13 +362,13 @@
   "snapshots": [],
   "integrity": {
     "ok": true,
-    "sha256": "98f0dbf560ea01c182ae8acc19558940cd561c96f4ca411dc22c4d7a690c3398",
-    "recordCount": 3,
-    "activeCount": 3,
+    "sha256": "c70b952899f3adee49642b4edf0c4f7683c3346e85f47fb6b5a8e947ff47ca72",
+    "recordCount": 4,
+    "activeCount": 4,
     "revokedCount": 0,
     "suspendedCount": 0,
     "expiredCount": 0,
-    "signedRecordCount": 3,
+    "signedRecordCount": 4,
     "unsignedRecordCount": 0,
     "invalidSignatureIds": [],
     "unsignedIds": [],
@@ -295,6 +377,6 @@
     "expiredIds": [],
     "problems": [],
     "warnings": [],
-    "checkedAt": "2026-06-13T11:13:15.098Z"
+    "checkedAt": "2026-06-13T11:20:19.845Z"
   }
 }
