@@ -1,7 +1,7 @@
 {
   "version": "PFSP-VERIFY-REGISTRY-v5",
   "schemaVersion": 5,
-  "updatedAt": "2026-06-13T11:20:19.755Z",
+  "updatedAt": "2026-06-13T11:23:03.911Z",
   "settings": {
     "shortQr": true,
     "serverSigned": true,
@@ -36,13 +36,13 @@
       "mimeType": "application/pdf",
       "createdAt": "2026-06-13T11:20:19.000Z",
       "registeredAt": "2026-06-13T11:20:19.753Z",
-      "updatedAt": "2026-06-13T11:20:19.753Z",
+      "updatedAt": "2026-06-13T11:23:03.911Z",
       "origin": "https://gtl-roan.vercel.app",
       "app": "PDF Fusion Smart Pro",
       "appVersion": "14.4.0-enterprise-trust-suite",
       "sourceBundleSha256": "",
       "checksum": "B56F2CB5411D6335A2048AFB",
-      "status": "active",
+      "status": "revoked",
       "expiresAt": "",
       "registeredBy": "auto-qr-export-v12",
       "registrationMode": "auto-qr-export",
@@ -61,19 +61,29 @@
       "signatureVersion": "PFSP-SERVER-SIGNED-CERT-v5",
       "keyId": "",
       "signatureAlgorithm": "HMAC-SHA256",
-      "revokedAt": "",
+      "revokedAt": "2026-06-13T11:23:03.911Z",
       "restoredAt": "",
       "suspendedAt": "",
-      "revokeReason": "",
+      "revokeReason": "Tài liệu vi phạm.Giả mạo",
       "suspendReason": "",
       "fingerprint": "69689BFC9CE3FFC01FCF561DBAB0415F",
       "shortVerifyUrl": "https://gtl-roan.vercel.app/verify.html?id=PFSP-20260613-F7NX3A",
       "verifyUrl": "https://gtl-roan.vercel.app/verify.html?id=PFSP-20260613-F7NX3A&sha256=b8a2cbbb2256e2678f1865cb17ba67a1a88767dfc4b86f39aba26d1818cb0eef&size=753878",
-      "certificateSignature": "77e770890c9b724ee2658b4b93716d4f75cda073f837dca7d9f3c277f9fab8f1",
-      "serverSignature": "77e770890c9b724ee2658b4b93716d4f75cda073f837dca7d9f3c277f9fab8f1",
+      "certificateSignature": "9be3d7e667aa9a87d028d688943e4dc8f4813957bc72ea8ed0247c251ca3b93e",
+      "serverSignature": "9be3d7e667aa9a87d028d688943e4dc8f4813957bc72ea8ed0247c251ca3b93e",
       "history": [
         {
-          "time": "2026-06-13T11:20:19.755Z",
+          "time": "2026-06-13T11:23:03.911Z",
+          "action": "revoke",
+          "actor": "admin",
+          "result": "REVOKED",
+          "message": "Tài liệu vi phạm.Giả mạo",
+          "sha256": "b8a2cbbb2256e2678f1865cb17ba67a1a88767dfc4b86f39aba26d1818cb0eef",
+          "status": "revoked",
+          "origin": "https://gtl-roan.vercel.app"
+        },
+        {
+          "time": "2026-06-13T11:23:03.911Z",
           "action": "auto-register",
           "actor": "public-auto-register",
           "result": "AUTO_REGISTERED",
@@ -83,7 +93,7 @@
           "origin": "https://gtl-roan.vercel.app"
         },
         {
-          "time": "2026-06-13T11:20:19.755Z",
+          "time": "2026-06-13T11:23:03.911Z",
           "action": "created",
           "actor": "auto-qr-export-v12",
           "result": "CREATED",
@@ -141,7 +151,7 @@
       "serverSignature": "846bec98c3d37b31891fc35f75e1ea0ad729e55800f180a7e65bed1508de1ffe",
       "history": [
         {
-          "time": "2026-06-13T11:20:19.755Z",
+          "time": "2026-06-13T11:23:03.911Z",
           "action": "auto-register",
           "actor": "public-auto-register",
           "result": "AUTO_REGISTERED",
@@ -151,7 +161,7 @@
           "origin": "https://gtl-roan.vercel.app"
         },
         {
-          "time": "2026-06-13T11:20:19.755Z",
+          "time": "2026-06-13T11:23:03.911Z",
           "action": "created",
           "actor": "auto-qr-export-v12",
           "result": "CREATED",
@@ -209,7 +219,7 @@
       "serverSignature": "f066b9624ad5d969cb8824a2a1beedbee9d72db248d58203ee7ec7af82ada1d4",
       "history": [
         {
-          "time": "2026-06-13T11:20:19.755Z",
+          "time": "2026-06-13T11:23:03.911Z",
           "action": "auto-register",
           "actor": "public-auto-register",
           "result": "AUTO_REGISTERED",
@@ -219,7 +229,7 @@
           "origin": "https://gtl-roan.vercel.app"
         },
         {
-          "time": "2026-06-13T11:20:19.755Z",
+          "time": "2026-06-13T11:23:03.911Z",
           "action": "created",
           "actor": "auto-qr-export-v12",
           "result": "CREATED",
@@ -277,7 +287,7 @@
       "serverSignature": "10152b6b56b2b53a62a1630baca0d67e2b6f2939dde82c3e362927759e10e8fa",
       "history": [
         {
-          "time": "2026-06-13T11:20:19.755Z",
+          "time": "2026-06-13T11:23:03.911Z",
           "action": "auto-register",
           "actor": "public-auto-register",
           "result": "AUTO_REGISTERED",
@@ -287,7 +297,7 @@
           "origin": "https://gtl-roan.vercel.app"
         },
         {
-          "time": "2026-06-13T11:20:19.755Z",
+          "time": "2026-06-13T11:23:03.911Z",
           "action": "created",
           "actor": "auto-qr-export-v12",
           "result": "CREATED",
@@ -302,6 +312,20 @@
     }
   ],
   "auditLog": [
+    {
+      "time": "2026-06-13T11:23:03.911Z",
+      "action": "revoke",
+      "id": "PFSP-20260613-F7NX3A",
+      "sha256": "b8a2cbbb2256e2678f1865cb17ba67a1a88767dfc4b86f39aba26d1818cb0eef",
+      "result": "REVOKED",
+      "ok": true,
+      "message": "Tài liệu vi phạm.Giả mạo",
+      "actor": "admin",
+      "clientIpHash": "91844C3DE8832ABAEFDC2743",
+      "userAgentHash": "8F5A02445266838A0004FC48",
+      "requestId": "",
+      "origin": "https://gtl-roan.vercel.app"
+    },
     {
       "time": "2026-06-13T11:20:19.754Z",
       "action": "auto-register",
@@ -362,10 +386,10 @@
   "snapshots": [],
   "integrity": {
     "ok": true,
-    "sha256": "c70b952899f3adee49642b4edf0c4f7683c3346e85f47fb6b5a8e947ff47ca72",
+    "sha256": "6aab4cc4dc380ae2ac74b96fe9665f984fbde222366fb4d0d15b63467b308c2f",
     "recordCount": 4,
-    "activeCount": 4,
-    "revokedCount": 0,
+    "activeCount": 3,
+    "revokedCount": 1,
     "suspendedCount": 0,
     "expiredCount": 0,
     "signedRecordCount": 4,
@@ -377,6 +401,6 @@
     "expiredIds": [],
     "problems": [],
     "warnings": [],
-    "checkedAt": "2026-06-13T11:20:19.845Z"
+    "checkedAt": "2026-06-13T11:23:03.992Z"
   }
 }
