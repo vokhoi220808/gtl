@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#1a1a2e">
+<meta name="robots" content="noindex,nofollow">
+<title>QR Verify | PDF Fusion Smart Pro</title>
+<link rel="manifest" href="./manifest.json">
+<link rel="icon" href="./favicon.svg" type="image/svg+xml">
+<style>
+:root{color-scheme:dark;--bg:#070711;--card:rgba(255,255,255,.075);--line:rgba(255,255,255,.15);--text:#f5f3ff;--muted:#c8c5e6;--good:#5af0b0;--warn:#ffd166;--bad:#ff6b88;--accent:#8b7cff}
+*{box-sizing:border-box}body{margin:0;min-height:100vh;background:radial-gradient(circle at 20% 0%,rgba(124,110,247,.35),transparent 35%),radial-gradient(circle at 90% 20%,rgba(224,64,251,.2),transparent 30%),var(--bg);color:var(--text);font-family:system-ui,-apple-system,Segoe UI,sans-serif;padding:24px}.wrap{width:min(980px,100%);margin:auto;display:grid;gap:18px}.hero,.card{border:1px solid var(--line);border-radius:26px;background:linear-gradient(135deg,rgba(255,255,255,.11),rgba(255,255,255,.055));box-shadow:0 24px 80px rgba(0,0,0,.35);backdrop-filter:blur(14px)}.hero{padding:30px}.card{padding:22px}h1{margin:0 0 8px;font-size:clamp(30px,5vw,54px);letter-spacing:-.04em}h2{margin:0 0 12px;font-size:22px}p{line-height:1.65;color:var(--muted)}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}@media(max-width:780px){.grid{grid-template-columns:1fr}}.id{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:clamp(18px,4vw,30px);word-break:break-all;background:rgba(0,0,0,.25);border:1px solid var(--line);border-radius:18px;padding:16px;margin:14px 0}.kv{display:grid;grid-template-columns:150px 1fr;gap:8px 12px;font-size:14px}.kv b{color:#fff}.kv span{color:var(--muted);word-break:break-all}.status{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--line);border-radius:999px;padding:8px 12px;font-weight:800}.status.good{color:#082315;background:rgba(90,240,176,.18);border-color:rgba(90,240,176,.42)}.status.warn{color:#2b1d00;background:rgba(255,209,102,.18);border-color:rgba(255,209,102,.42)}.status.bad{color:#2b0009;background:rgba(255,107,136,.18);border-color:rgba(255,107,136,.42)}.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}.btn{border:0;border-radius:14px;padding:12px 16px;background:rgba(255,255,255,.11);color:white;text-decoration:none;font-weight:800;cursor:pointer}.btn.good{background:linear-gradient(135deg,#7c6ef7,#e040fb)}input,textarea{width:100%;border:1px solid var(--line);border-radius:14px;padding:12px 14px;background:rgba(0,0,0,.25);color:white;outline:none}textarea{min-height:108px;resize:vertical}.small{font-size:13px;color:#aaaad0}.mono{font-family:ui-monospace,SFMono-Regular,Consolas,monospace}.ok{color:var(--good)}.warnText{color:var(--warn)}.badText{color:var(--bad)}.footer{opacity:.75;text-align:center;font-size:12px;padding:8px}.lang{margin-left:auto}.hidden{display:none!important}</style>
+</head>
+<body>
+<main class="wrap">
+  <section class="hero">
+    <div class="row"><h1 data-i18n="title">Xác minh QR tài liệu</h1><button class="btn lang" id="langBtn" type="button">English</button></div>
+    <p data-i18n="lead">Trang này đọc mã QR Verification ID được tạo bởi PDF Fusion Smart Pro, kiểm tra định dạng ID và checksum đi kèm trong liên kết QR.</p>
+    <div id="statusBadge" class="status warn">⏳ Đang kiểm tra...</div>
+    <div class="id" id="docId">Đang đọc mã...</div>
+    <div class="row">
+      <button class="btn good" id="copyBtn" type="button" data-i18n="copy">Copy mã</button>
+      <button class="btn" id="copyUrlBtn" type="button" data-i18n="copyUrl">Copy link xác minh</button>
+      <a class="btn" href="./index.html" data-i18n="openApp">Mở PDF Fusion</a>
+    </div>
+  </section>
+
+  <section class="grid">
+    <div class="card">
+      <h2 data-i18n="details">Chi tiết QR</h2>
+      <div class="kv">
+        <b>ID</b><span id="kvId">-</span>
+        <b>Thời gian</b><span id="kvTs">-</span>
+        <b>Nguồn</b><span id="kvOrigin">-</span>
+        <b>Checksum</b><span id="kvCk">-</span>
+        <b>Kết quả</b><span id="kvResult">-</span>
+      </div>
+      <p class="small" data-i18n="legal">Lưu ý: kiểm tra này xác nhận QR/ID/checksum do app tạo ra, không thay thế chữ ký số pháp lý hoặc hệ thống xác minh có backend lưu hash tài liệu.</p>
+    </div>
+
+    <div class="card">
+      <h2 data-i18n="manual">Kiểm tra thủ công</h2>
+      <p class="small" data-i18n="manualHint">Dán link QR hoặc chỉ mã ID vào đây để kiểm tra nhanh.</p>
+      <textarea id="manualInput" placeholder="PFSP-20260612-ABC123 hoặc https://.../verify.html?id=..."></textarea>
+      <div class="row" style="margin-top:10px"><button class="btn good" id="manualBtn" type="button" data-i18n="check">Kiểm tra</button><button class="btn" id="clearBtn" type="button" data-i18n="clear">Xóa</button></div>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2 data-i18n="scanTitle">Đọc QR từ ảnh</h2>
+    <p class="small" data-i18n="scanHint">Tải ảnh chụp QR lên. Trình duyệt hỗ trợ BarcodeDetector sẽ tự đọc QR; nếu không hỗ trợ, hãy dùng camera điện thoại để mở link QR.</p>
+    <input id="qrImage" type="file" accept="image/*">
+    <p id="scanResult" class="small mono"></p>
+  </section>
+
+  <div class="footer">PDF Fusion Smart Pro QR Verify v2</div>
+</main>
+<script>
+const $ = id => document.getElementById(id);
+const dict = {
+  vi:{title:'Xác minh QR tài liệu',lead:'Trang này đọc mã QR Verification ID được tạo bởi PDF Fusion Smart Pro, kiểm tra định dạng ID và checksum đi kèm trong liên kết QR.',copy:'Copy mã',copyUrl:'Copy link xác minh',openApp:'Mở PDF Fusion',details:'Chi tiết QR',legal:'Lưu ý: kiểm tra này xác nhận QR/ID/checksum do app tạo ra, không thay thế chữ ký số pháp lý hoặc hệ thống xác minh có backend lưu hash tài liệu.',manual:'Kiểm tra thủ công',manualHint:'Dán link QR hoặc chỉ mã ID vào đây để kiểm tra nhanh.',check:'Kiểm tra',clear:'Xóa',scanTitle:'Đọc QR từ ảnh',scanHint:'Tải ảnh chụp QR lên. Trình duyệt hỗ trợ BarcodeDetector sẽ tự đọc QR; nếu không hỗ trợ, hãy dùng camera điện thoại để mở link QR.'},
+  en:{title:'Document QR verification',lead:'This page reads the QR Verification ID generated by PDF Fusion Smart Pro and checks the ID format plus the checksum included in the QR link.',copy:'Copy ID',copyUrl:'Copy verify link',openApp:'Open PDF Fusion',details:'QR details',legal:'Note: this check confirms the QR/ID/checksum generated by the app. It is not a replacement for legal digital signatures or a backend verification system storing document hashes.',manual:'Manual check',manualHint:'Paste a QR link or only an ID here for a quick check.',check:'Check',clear:'Clear',scanTitle:'Read QR from image',scanHint:'Upload a QR screenshot. Browsers with BarcodeDetector support can read it automatically; otherwise use your phone camera to open the QR link.'}
+};
+let lang = localStorage.getItem('pfspVerifyLang') || ((navigator.language||'').startsWith('vi')?'vi':'en');
+function applyLang(){document.querySelectorAll('[data-i18n]').forEach(el=>{const k=el.dataset.i18n;if(dict[lang][k])el.textContent=dict[lang][k]});$('langBtn').textContent=lang==='vi'?'English':'Tiếng Việt';document.documentElement.lang=lang;}
+$('langBtn').onclick=()=>{lang=lang==='vi'?'en':'vi';localStorage.setItem('pfspVerifyLang',lang);applyLang();};
+function qrChecksum(id, ts, origin){
+  const input = `PFSP-VERIFY-v2|${String(id||'').trim()}|${String(ts||'').trim()}|${String(origin||'').trim()}`;
+  let h = 2166136261;
+  for (let i = 0; i < input.length; i++) { h ^= input.charCodeAt(i); h += (h << 1) + (h << 4) + (h << 7) + (h << 8) + (h << 24); }
+  return (h >>> 0).toString(36).toUpperCase().padStart(7, '0');
+}
+function paramsFromText(text){
+  const raw=String(text||'').trim();
+  if(!raw) return new URLSearchParams(location.search);
+  try{ const u = new URL(raw, location.href); return u.searchParams; }catch{}
+  const p = new URLSearchParams(); p.set('id', raw); return p;
+}
+function validateFromParams(p){
+  const id=(p.get('id')||'').trim();
+  const ts=(p.get('ts')||'').trim();
+  const origin=(p.get('o')||p.get('origin')||location.origin||'').trim();
+  const ck=(p.get('ck')||p.get('sig')||'').trim().toUpperCase();
+  const idOk=/^PFSP-\d{8}-[A-Z0-9]{6,10}$/i.test(id) || /^PFSP-[A-Z0-9-]{6,}$/i.test(id);
+  let result=''; let level='warn';
+  if(!id){ result= lang==='vi' ? 'Không có ID trong QR/link.' : 'No ID found in the QR/link.'; level='bad'; }
+  else if(ck && ts){
+    const expected=qrChecksum(id,ts,origin);
+    if(expected===ck){ result= lang==='vi' ? 'QR hợp lệ: ID và checksum khớp.' : 'Valid QR: ID and checksum match.'; level='good'; }
+    else { result= lang==='vi' ? `Checksum không khớp. Mã đúng dự kiến: ${expected}` : `Checksum mismatch. Expected: ${expected}`; level='bad'; }
+  } else if(idOk){ result= lang==='vi' ? 'ID hợp lệ định dạng, nhưng QR cũ thiếu timestamp/checksum.' : 'Valid ID format, but this old QR lacks timestamp/checksum.'; level='warn'; }
+  else { result= lang==='vi' ? 'Có ID nhưng định dạng không chuẩn PFSP.' : 'ID found, but it is not in the standard PFSP format.'; level='warn'; }
+  return {id,ts,origin,ck,result,level,idOk};
+}
+function renderCheck(p=paramsFromText('')){
+  const r=validateFromParams(p);
+  $('docId').textContent=r.id || (lang==='vi'?'Không có mã ID trong URL.':'No ID in the URL.');
+  $('kvId').textContent=r.id||'-'; $('kvTs').textContent=r.ts||'-'; $('kvOrigin').textContent=r.origin||'-'; $('kvCk').textContent=r.ck||'-'; $('kvResult').textContent=r.result;
+  const badge=$('statusBadge'); badge.className='status '+r.level; badge.textContent=(r.level==='good'?'✅ ':r.level==='bad'?'❌ ':'⚠️ ')+r.result;
+}
+$('copyBtn').onclick=async()=>{const id=$('kvId').textContent;try{await navigator.clipboard.writeText(id==='-'?'':id);$('docId').textContent=id+'  ✓'}catch{}};
+$('copyUrlBtn').onclick=async()=>{try{await navigator.clipboard.writeText(location.href);$('docId').textContent=($('kvId').textContent||'URL')+'  ✓'}catch{}};
+$('manualBtn').onclick=()=>renderCheck(paramsFromText($('manualInput').value));
+$('clearBtn').onclick=()=>{$('manualInput').value='';renderCheck(new URLSearchParams());};
+$('qrImage').addEventListener('change', async ev=>{
+  const file=ev.target.files&&ev.target.files[0]; if(!file)return;
+  const out=$('scanResult'); out.textContent='Đang đọc ảnh QR...';
+  try{
+    if(!('BarcodeDetector' in window)) throw new Error('BarcodeDetector chưa được trình duyệt này hỗ trợ.');
+    const detector=new BarcodeDetector({formats:['qr_code']});
+    const bitmap=await createImageBitmap(file); const codes=await detector.detect(bitmap);
+    if(!codes.length) throw new Error('Không thấy QR trong ảnh.');
+    const value=codes[0].rawValue||''; out.textContent=value; $('manualInput').value=value; renderCheck(paramsFromText(value));
+  }catch(err){out.textContent='Không đọc được QR từ ảnh: '+err.message+' Hãy thử mở link bằng camera điện thoại rồi copy URL vào ô kiểm tra thủ công.';}
+});
+applyLang(); renderCheck();
+</script>
+</body>
+</html>

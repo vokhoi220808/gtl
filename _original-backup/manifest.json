@@ -1,0 +1,13 @@
+{
+  "name": "PDF Fusion Smart Pro Universal Plus",
+  "short_name": "PDF Fusion Plus",
+  "description": "Gộp, tách, OCR, nén, ký, QR, compare, batch PDF/Word/ảnh trong trình duyệt.",
+  "start_url": "./pdf-fusion-smart-pro-universal-pro-suite-plus.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#020617",
+  "theme_color": "#2563eb",
+  "icons": [
+    {"src":"./icon-192.svg","sizes":"192x192","type":"image/svg+xml","purpose":"any maskable"}
+  ]
+}
