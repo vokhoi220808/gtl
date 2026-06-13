@@ -1,7 +1,7 @@
 {
   "version": "PFSP-VERIFY-REGISTRY-v4",
   "schemaVersion": 4,
-  "updatedAt": "2026-06-13T06:33:18.674Z",
+  "updatedAt": "2026-06-13T06:33:25.064Z",
   "settings": {
     "shortQr": true,
     "serverSigned": true,
@@ -25,7 +25,7 @@
       "mimeType": "application/pdf",
       "createdAt": "2026-06-13T06:28:38.000Z",
       "registeredAt": "2026-06-13T06:28:38.543Z",
-      "updatedAt": "2026-06-13T06:33:18.673Z",
+      "updatedAt": "2026-06-13T06:33:25.063Z",
       "origin": "https://gtl-roan.vercel.app",
       "app": "PDF Fusion Smart Pro",
       "appVersion": "12.0.0-verify-big-update",
@@ -54,11 +54,21 @@
       "fingerprint": "70C6E3069A1538AD2F70A76C1F29DA8F",
       "shortVerifyUrl": "https://gtl-roan.vercel.app/verify.html?id=PFSP-20260613-3DJ2K1",
       "verifyUrl": "https://gtl-roan.vercel.app/verify.html?id=PFSP-20260613-3DJ2K1&sha256=9eff1b9f2fde82f55a9dbbe9c5fa83db7fe87fba9355c09e3d904b481db6e4bd&size=755669",
-      "certificateSignature": "cc6bde07a79ad48727a91f0ccd4c0b845e4a2eea31372d03890aaae337245229",
-      "serverSignature": "cc6bde07a79ad48727a91f0ccd4c0b845e4a2eea31372d03890aaae337245229",
+      "certificateSignature": "266dbd53ae2fb43556c97f0859231b2d879d5a2c2b16be7a76ff4c1069276f9e",
+      "serverSignature": "266dbd53ae2fb43556c97f0859231b2d879d5a2c2b16be7a76ff4c1069276f9e",
       "history": [
         {
-          "time": "2026-06-13T06:33:18.674Z",
+          "time": "2026-06-13T06:33:25.064Z",
+          "action": "update-expiry",
+          "actor": "admin",
+          "result": "EXPIRY_UPDATED",
+          "message": "update-expiry",
+          "sha256": "9eff1b9f2fde82f55a9dbbe9c5fa83db7fe87fba9355c09e3d904b481db6e4bd",
+          "status": "active",
+          "origin": "https://gtl-roan.vercel.app"
+        },
+        {
+          "time": "2026-06-13T06:33:25.064Z",
           "action": "restore",
           "actor": "admin",
           "result": "RESTORED",
@@ -68,7 +78,7 @@
           "origin": "https://gtl-roan.vercel.app"
         },
         {
-          "time": "2026-06-13T06:33:18.674Z",
+          "time": "2026-06-13T06:33:25.064Z",
           "action": "restore",
           "actor": "admin",
           "result": "RESTORED",
@@ -78,7 +88,7 @@
           "origin": "https://gtl-roan.vercel.app"
         },
         {
-          "time": "2026-06-13T06:33:18.674Z",
+          "time": "2026-06-13T06:33:25.064Z",
           "action": "revoke",
           "actor": "admin",
           "result": "REVOKED",
@@ -88,7 +98,7 @@
           "origin": "https://gtl-roan.vercel.app"
         },
         {
-          "time": "2026-06-13T06:33:18.674Z",
+          "time": "2026-06-13T06:33:25.064Z",
           "action": "auto-register",
           "actor": "public-auto-register",
           "result": "AUTO_REGISTERED",
@@ -98,7 +108,7 @@
           "origin": "https://gtl-roan.vercel.app"
         },
         {
-          "time": "2026-06-13T06:33:18.674Z",
+          "time": "2026-06-13T06:33:25.064Z",
           "action": "created",
           "actor": "auto-qr-export-v12",
           "result": "CREATED",
@@ -152,7 +162,7 @@
       "serverSignature": "26152238e12a3b4e077888ff6a4b4de61bab1eb0aa9f2fcd6c7f1a9636a4e473",
       "history": [
         {
-          "time": "2026-06-13T06:33:18.674Z",
+          "time": "2026-06-13T06:33:25.064Z",
           "action": "suspend",
           "actor": "admin",
           "result": "SUSPENDED",
@@ -162,7 +172,7 @@
           "origin": "https://gtl-roan.vercel.app"
         },
         {
-          "time": "2026-06-13T06:33:18.674Z",
+          "time": "2026-06-13T06:33:25.064Z",
           "action": "revoke",
           "actor": "admin",
           "result": "REVOKED",
@@ -172,7 +182,7 @@
           "origin": "https://gtl-roan.vercel.app"
         },
         {
-          "time": "2026-06-13T06:33:18.674Z",
+          "time": "2026-06-13T06:33:25.064Z",
           "action": "manual-register",
           "actor": "admin",
           "result": "REGISTERED",
@@ -182,7 +192,7 @@
           "origin": "https://gtl-roan.vercel.app"
         },
         {
-          "time": "2026-06-13T06:33:18.674Z",
+          "time": "2026-06-13T06:33:25.064Z",
           "action": "created",
           "actor": "PDF Fusion Smart Pro UI",
           "result": "CREATED",
@@ -195,6 +205,20 @@
     }
   ],
   "auditLog": [
+    {
+      "time": "2026-06-13T06:33:25.064Z",
+      "action": "update-expiry",
+      "id": "PFSP-20260613-3DJ2K1",
+      "sha256": "9eff1b9f2fde82f55a9dbbe9c5fa83db7fe87fba9355c09e3d904b481db6e4bd",
+      "result": "EXPIRY_UPDATED",
+      "ok": true,
+      "message": "update-expiry",
+      "actor": "admin",
+      "clientIpHash": "91844C3DE8832ABAEFDC2743",
+      "userAgentHash": "8F5A02445266838A0004FC48",
+      "requestId": "",
+      "origin": "https://gtl-roan.vercel.app"
+    },
     {
       "time": "2026-06-13T06:33:18.674Z",
       "action": "restore",
@@ -297,7 +321,7 @@
   "snapshots": [],
   "integrity": {
     "ok": true,
-    "sha256": "d226b35b70c1eafa78b44dffc2fe21ffa2c76020bc4441928b1f1049f8abe92b",
+    "sha256": "6273f5be70c3044ec92e7c36b535606dabc00737687b9a686c42933ba443ffa8",
     "recordCount": 2,
     "activeCount": 1,
     "revokedCount": 0,
@@ -312,6 +336,6 @@
     "expiredIds": [],
     "problems": [],
     "warnings": [],
-    "checkedAt": "2026-06-13T06:33:18.796Z"
+    "checkedAt": "2026-06-13T06:33:25.134Z"
   }
 }
