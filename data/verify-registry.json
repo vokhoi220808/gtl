@@ -1,7 +1,7 @@
 {
   "version": "PFSP-VERIFY-REGISTRY-v4",
   "schemaVersion": 4,
-  "updatedAt": "2026-06-13T06:31:35.396Z",
+  "updatedAt": "2026-06-13T06:31:37.289Z",
   "settings": {
     "shortQr": true,
     "serverSigned": true,
@@ -58,7 +58,7 @@
       "serverSignature": "eb3699997ce82442d2bcef8c142bc39ac1d5fb4d796fe479f5d91cb061086bc5",
       "history": [
         {
-          "time": "2026-06-13T06:31:35.396Z",
+          "time": "2026-06-13T06:31:37.289Z",
           "action": "revoke",
           "actor": "admin",
           "result": "REVOKED",
@@ -68,7 +68,7 @@
           "origin": "https://gtl-roan.vercel.app"
         },
         {
-          "time": "2026-06-13T06:31:35.396Z",
+          "time": "2026-06-13T06:31:37.289Z",
           "action": "auto-register",
           "actor": "public-auto-register",
           "result": "AUTO_REGISTERED",
@@ -78,7 +78,7 @@
           "origin": "https://gtl-roan.vercel.app"
         },
         {
-          "time": "2026-06-13T06:31:35.396Z",
+          "time": "2026-06-13T06:31:37.289Z",
           "action": "created",
           "actor": "auto-qr-export-v12",
           "result": "CREATED",
@@ -99,13 +99,13 @@
       "mimeType": "application/pdf",
       "createdAt": "2026-06-12T16:23:05.000Z",
       "registeredAt": "2026-06-13T06:25:16.093Z",
-      "updatedAt": "2026-06-13T06:31:35.396Z",
+      "updatedAt": "2026-06-13T06:31:37.289Z",
       "origin": "https://gtl-roan.vercel.app",
       "app": "PDF Fusion Smart Pro",
       "appVersion": "7.0.0-document-hash-verify",
       "sourceBundleSha256": "91130c0472df140c517f96dec221e732c76ea797958098417f2d9c182eab0202",
       "checksum": "D9C9E3E6E918B783C505DE18",
-      "status": "revoked",
+      "status": "suspended",
       "expiresAt": "",
       "registeredBy": "PDF Fusion Smart Pro UI",
       "registrationMode": "manual-admin",
@@ -122,17 +122,27 @@
       "signatureAlgorithm": "HMAC-SHA256",
       "revokedAt": "2026-06-13T06:31:35.396Z",
       "restoredAt": "",
-      "suspendedAt": "",
+      "suspendedAt": "2026-06-13T06:31:37.289Z",
       "revokeReason": "revoked by admin",
-      "suspendReason": "",
+      "suspendReason": "Cần kiểm tra lại tài liệu",
       "fingerprint": "2FAFF3BAA9731CE4721E2CA0CDEF3AC4",
       "shortVerifyUrl": "https://gtl-roan.vercel.app/verify.html?id=PFSP-20260612-K2DUOD",
       "verifyUrl": "https://gtl-roan.vercel.app/verify.html?id=PFSP-20260612-K2DUOD&sha256=b66e9b23d940cf6b525dc9a605d2f480bff465f003648fbf6f426b9f543d626c&size=755600",
-      "certificateSignature": "02ec1520d6028a3b6debc407c7e3ed8c6f67518167e6c6e5640d9f581829d7d1",
-      "serverSignature": "02ec1520d6028a3b6debc407c7e3ed8c6f67518167e6c6e5640d9f581829d7d1",
+      "certificateSignature": "26152238e12a3b4e077888ff6a4b4de61bab1eb0aa9f2fcd6c7f1a9636a4e473",
+      "serverSignature": "26152238e12a3b4e077888ff6a4b4de61bab1eb0aa9f2fcd6c7f1a9636a4e473",
       "history": [
         {
-          "time": "2026-06-13T06:31:35.396Z",
+          "time": "2026-06-13T06:31:37.289Z",
+          "action": "suspend",
+          "actor": "admin",
+          "result": "SUSPENDED",
+          "message": "Cần kiểm tra lại tài liệu",
+          "sha256": "b66e9b23d940cf6b525dc9a605d2f480bff465f003648fbf6f426b9f543d626c",
+          "status": "suspended",
+          "origin": "https://gtl-roan.vercel.app"
+        },
+        {
+          "time": "2026-06-13T06:31:37.289Z",
           "action": "revoke",
           "actor": "admin",
           "result": "REVOKED",
@@ -142,7 +152,7 @@
           "origin": "https://gtl-roan.vercel.app"
         },
         {
-          "time": "2026-06-13T06:31:35.396Z",
+          "time": "2026-06-13T06:31:37.289Z",
           "action": "manual-register",
           "actor": "admin",
           "result": "REGISTERED",
@@ -152,7 +162,7 @@
           "origin": "https://gtl-roan.vercel.app"
         },
         {
-          "time": "2026-06-13T06:31:35.396Z",
+          "time": "2026-06-13T06:31:37.289Z",
           "action": "created",
           "actor": "PDF Fusion Smart Pro UI",
           "result": "CREATED",
@@ -165,6 +175,20 @@
     }
   ],
   "auditLog": [
+    {
+      "time": "2026-06-13T06:31:37.289Z",
+      "action": "suspend",
+      "id": "PFSP-20260612-K2DUOD",
+      "sha256": "b66e9b23d940cf6b525dc9a605d2f480bff465f003648fbf6f426b9f543d626c",
+      "result": "SUSPENDED",
+      "ok": true,
+      "message": "Cần kiểm tra lại tài liệu",
+      "actor": "admin",
+      "clientIpHash": "91844C3DE8832ABAEFDC2743",
+      "userAgentHash": "8F5A02445266838A0004FC48",
+      "requestId": "",
+      "origin": "https://gtl-roan.vercel.app"
+    },
     {
       "time": "2026-06-13T06:31:35.396Z",
       "action": "revoke",
@@ -225,11 +249,11 @@
   "snapshots": [],
   "integrity": {
     "ok": true,
-    "sha256": "ee0bdadfc5bbb8467827dab8110f1782a6036e88764ed0cd9750c8b7595f8e5b",
+    "sha256": "94e8830270891468ec9b3c6ad31c43bdd578fe57eef162b6533884e12feb21db",
     "recordCount": 2,
     "activeCount": 0,
-    "revokedCount": 2,
-    "suspendedCount": 0,
+    "revokedCount": 1,
+    "suspendedCount": 1,
     "expiredCount": 0,
     "signedRecordCount": 2,
     "unsignedRecordCount": 0,
@@ -240,6 +264,6 @@
     "expiredIds": [],
     "problems": [],
     "warnings": [],
-    "checkedAt": "2026-06-13T06:31:35.467Z"
+    "checkedAt": "2026-06-13T06:31:37.358Z"
   }
 }
