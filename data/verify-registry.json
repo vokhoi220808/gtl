@@ -1,0 +1,39 @@
+{
+  "version": "PFSP-VERIFY-REGISTRY-v4",
+  "schemaVersion": 4,
+  "updatedAt": "2026-06-13T00:00:00Z",
+  "settings": {
+    "shortQr": true,
+    "serverSigned": true,
+    "auditLog": true,
+    "autoRegister": true,
+    "expirySupported": true,
+    "revokeReasonSupported": true,
+    "historySupported": true,
+    "batchVerifySupported": true,
+    "lookupHashSupported": true,
+    "bulkRegisterSupported": true,
+    "trustScoreSupported": true,
+    "schema": "v4"
+  },
+  "records": [],
+  "auditLog": [],
+  "snapshots": [],
+  "integrity": {
+    "ok": true,
+    "recordCount": 0,
+    "activeCount": 0,
+    "revokedCount": 0,
+    "suspendedCount": 0,
+    "expiredCount": 0,
+    "signedRecordCount": 0,
+    "unsignedRecordCount": 0,
+    "invalidSignatureIds": [],
+    "unsignedIds": [],
+    "duplicateIds": [],
+    "duplicateHashes": [],
+    "problems": [],
+    "warnings": [],
+    "checkedAt": "2026-06-13T00:00:00Z"
+  }
+}
