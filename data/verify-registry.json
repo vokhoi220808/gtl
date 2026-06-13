@@ -1,7 +1,7 @@
 {
   "version": "PFSP-VERIFY-REGISTRY-v4",
   "schemaVersion": 4,
-  "updatedAt": "2026-06-13T06:25:16.095Z",
+  "updatedAt": "2026-06-13T06:28:38.545Z",
   "settings": {
     "shortQr": true,
     "serverSigned": true,
@@ -17,6 +17,70 @@
     "schema": "v4"
   },
   "records": [
+    {
+      "id": "PFSP-20260613-3DJ2K1",
+      "sha256": "9eff1b9f2fde82f55a9dbbe9c5fa83db7fe87fba9355c09e3d904b481db6e4bd",
+      "size": 755669,
+      "fileName": "pdf-fusion.pdf",
+      "mimeType": "application/pdf",
+      "createdAt": "2026-06-13T06:28:38.000Z",
+      "registeredAt": "2026-06-13T06:28:38.543Z",
+      "updatedAt": "2026-06-13T06:28:38.543Z",
+      "origin": "https://gtl-roan.vercel.app",
+      "app": "PDF Fusion Smart Pro",
+      "appVersion": "12.0.0-verify-big-update",
+      "sourceBundleSha256": "91130c0472df140c517f96dec221e732c76ea797958098417f2d9c182eab0202",
+      "checksum": "7FA4938E173AE92737424728",
+      "status": "active",
+      "expiresAt": "",
+      "registeredBy": "auto-qr-export-v12",
+      "registrationMode": "auto-qr-export",
+      "owner": "",
+      "project": "",
+      "documentTitle": "",
+      "tags": [],
+      "note": "Auto registered when PDF Fusion exported a QR Verify PDF.",
+      "policy": {
+        "retention": "",
+        "visibility": "public-metadata"
+      },
+      "signatureVersion": "PFSP-SERVER-SIGNED-CERT-v4",
+      "signatureAlgorithm": "HMAC-SHA256",
+      "revokedAt": "",
+      "restoredAt": "",
+      "suspendedAt": "",
+      "revokeReason": "",
+      "suspendReason": "",
+      "fingerprint": "70C6E3069A1538AD2F70A76C1F29DA8F",
+      "shortVerifyUrl": "https://gtl-roan.vercel.app/verify.html?id=PFSP-20260613-3DJ2K1",
+      "verifyUrl": "https://gtl-roan.vercel.app/verify.html?id=PFSP-20260613-3DJ2K1&sha256=9eff1b9f2fde82f55a9dbbe9c5fa83db7fe87fba9355c09e3d904b481db6e4bd&size=755669",
+      "certificateSignature": "1de70b6d6a5bf9b6300205a31adb906d61539c97af8aed41dbc5a98d2fdc3522",
+      "serverSignature": "1de70b6d6a5bf9b6300205a31adb906d61539c97af8aed41dbc5a98d2fdc3522",
+      "history": [
+        {
+          "time": "2026-06-13T06:28:38.545Z",
+          "action": "auto-register",
+          "actor": "public-auto-register",
+          "result": "AUTO_REGISTERED",
+          "message": "",
+          "sha256": "9eff1b9f2fde82f55a9dbbe9c5fa83db7fe87fba9355c09e3d904b481db6e4bd",
+          "status": "active",
+          "origin": "https://gtl-roan.vercel.app"
+        },
+        {
+          "time": "2026-06-13T06:28:38.545Z",
+          "action": "created",
+          "actor": "auto-qr-export-v12",
+          "result": "CREATED",
+          "message": "",
+          "sha256": "9eff1b9f2fde82f55a9dbbe9c5fa83db7fe87fba9355c09e3d904b481db6e4bd",
+          "status": "active",
+          "origin": "https://gtl-roan.vercel.app"
+        }
+      ],
+      "clientIpHash": "91844C3DE8832ABAEFDC2743",
+      "userAgentHash": "8F5A02445266838A0004FC48"
+    },
     {
       "id": "PFSP-20260612-K2DUOD",
       "sha256": "b66e9b23d940cf6b525dc9a605d2f480bff465f003648fbf6f426b9f543d626c",
@@ -58,7 +122,7 @@
       "serverSignature": "b728f0370656145d99f68cfa8dd0de153ad90b6fe444b77861a833f63496c0a4",
       "history": [
         {
-          "time": "2026-06-13T06:25:16.095Z",
+          "time": "2026-06-13T06:28:38.545Z",
           "action": "manual-register",
           "actor": "admin",
           "result": "REGISTERED",
@@ -68,7 +132,7 @@
           "origin": "https://gtl-roan.vercel.app"
         },
         {
-          "time": "2026-06-13T06:25:16.095Z",
+          "time": "2026-06-13T06:28:38.545Z",
           "action": "created",
           "actor": "PDF Fusion Smart Pro UI",
           "result": "CREATED",
@@ -81,6 +145,20 @@
     }
   ],
   "auditLog": [
+    {
+      "time": "2026-06-13T06:28:38.545Z",
+      "action": "auto-register",
+      "id": "PFSP-20260613-3DJ2K1",
+      "sha256": "9eff1b9f2fde82f55a9dbbe9c5fa83db7fe87fba9355c09e3d904b481db6e4bd",
+      "result": "AUTO_REGISTERED",
+      "ok": true,
+      "message": "Auto-registered on PDF export.",
+      "actor": "",
+      "clientIpHash": "91844C3DE8832ABAEFDC2743",
+      "userAgentHash": "8F5A02445266838A0004FC48",
+      "requestId": "",
+      "origin": "https://gtl-roan.vercel.app"
+    },
     {
       "time": "2026-06-13T06:25:16.095Z",
       "action": "register",
@@ -99,13 +177,13 @@
   "snapshots": [],
   "integrity": {
     "ok": true,
-    "sha256": "5bed203aedbe12a8c04b0cfcd6b92f8333fb7b6c6718f0465e9e7f85b8821537",
-    "recordCount": 1,
-    "activeCount": 1,
+    "sha256": "0033895aa57a041fee2a5af01eeeca5e2325f5a80b1c331fdf90ba8aeb79843d",
+    "recordCount": 2,
+    "activeCount": 2,
     "revokedCount": 0,
     "suspendedCount": 0,
     "expiredCount": 0,
-    "signedRecordCount": 1,
+    "signedRecordCount": 2,
     "unsignedRecordCount": 0,
     "invalidSignatureIds": [],
     "unsignedIds": [],
@@ -114,6 +192,6 @@
     "expiredIds": [],
     "problems": [],
     "warnings": [],
-    "checkedAt": "2026-06-13T06:25:16.168Z"
+    "checkedAt": "2026-06-13T06:28:38.633Z"
   }
 }
