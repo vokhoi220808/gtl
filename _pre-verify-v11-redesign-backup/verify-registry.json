@@ -1,0 +1,16 @@
+{
+  "version": "PFSP-VERIFY-REGISTRY-v2",
+  "updatedAt": "2026-06-12T00:00:00Z",
+  "records": [],
+  "auditLog": [],
+  "snapshots": [],
+  "schemaVersion": 2,
+  "settings": {
+    "shortQr": true,
+    "serverSigned": true,
+    "auditLog": true,
+    "expirySupported": true,
+    "revokeReasonSupported": true,
+    "autoRegister": true
+  }
+}

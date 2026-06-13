@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Trust Portal v13 · PDF Fusion Smart Pro</title>
+  <meta name="description" content="Trust Portal công khai cho Verify System: tra cứu Verify ID, SHA-256, trust score, certificate, badge và batch verify PDF.">
+  <link rel="icon" href="./favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="./assets/pfsp-verify-final.css?v=13.0.0-trust-portal">
+  <style>
+    body.pfsp-v13-page{margin:0;min-height:100vh;background:radial-gradient(circle at 18% 0%,rgba(37,99,235,.28),transparent 36%),radial-gradient(circle at 82% 10%,rgba(124,58,237,.20),transparent 34%),linear-gradient(180deg,#020617,#08111f 52%,#020617);color:#e5f0ff;font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}.pfsp-v13-score-line{display:flex;gap:8px;align-items:flex-end;margin-top:10px}.pfsp-v13-score-line b{font-size:34px;color:#fff}.pfsp-v13-metrics{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px;margin-top:18px}.pfsp-v13-metric{border:1px solid rgba(148,163,184,.24);border-radius:18px;background:rgba(2,6,23,.32);padding:14px}.pfsp-v13-metric b{display:block;font-size:28px;color:#fff}.pfsp-v13-metric span{color:#a9bdd6;font-size:12px;text-transform:uppercase;font-weight:900;letter-spacing:.08em}.pfsp-v13-portal-hero{overflow:hidden;position:relative}.pfsp-v13-portal-hero:after{content:"";position:absolute;right:-90px;top:-90px;width:260px;height:260px;border-radius:999px;background:rgba(96,165,250,.12);filter:blur(8px);pointer-events:none}.pfsp-v13-code{font-family:ui-monospace,SFMono-Regular,Consolas,monospace}@media(max-width:900px){.pfsp-v13-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:560px){.pfsp-v13-metrics{grid-template-columns:1fr}}
+  </style>
+</head>
+<body class="pfsp-v11-page pfsp-v12-page pfsp-v13-page">
+<main class="pfsp-v11-wrap">
+  <section class="pfsp-v11-hero pfsp-v13-portal-hero">
+    <div class="pfsp-v11-top">
+      <div class="pfsp-v11-brand">
+        <div class="pfsp-v11-logo">🛡️</div>
+        <div>
+          <div class="pfsp-v11-kicker">Verify System v13 · Trust Portal</div>
+          <h1>PDF Fusion Trust Portal</h1>
+          <p>Tra cứu public registry, xác minh Verify ID/SHA-256, tạo badge, tải certificate và batch verify nhiều tài liệu mà không upload PDF lên server.</p>
+        </div>
+      </div>
+      <div class="pfsp-v11-actions">
+        <a class="pfsp-v11-btn ghost" href="./index.html">← App</a>
+        <a class="pfsp-v11-btn" href="./verify.html">Verify page</a>
+        <a class="pfsp-v11-btn" href="./verify-registry.html">Registry docs</a>
+        <a class="pfsp-v11-btn" href="./admin-verify.html">Admin</a>
+      </div>
+    </div>
+    <div class="pfsp-v13-metrics">
+      <div class="pfsp-v13-metric"><span>Tổng record</span><b id="sumTotal">-</b></div>
+      <div class="pfsp-v13-metric"><span>Active</span><b id="sumActive">-</b></div>
+      <div class="pfsp-v13-metric"><span>Revoked</span><b id="sumRevoked">-</b></div>
+      <div class="pfsp-v13-metric"><span>Suspended</span><b id="sumSuspended">-</b></div>
+      <div class="pfsp-v13-metric"><span>Integrity</span><b id="sumIntegrity">-</b></div>
+    </div>
+    <p class="pfsp-v11-small">Cập nhật registry: <span id="sumUpdated">-</span></p>
+  </section>
+
+  <section class="pfsp-v11-grid sidebar">
+    <div class="pfsp-v11-card">
+      <h2>Tra cứu public trust records</h2>
+      <div class="pfsp-v11-actions">
+        <input id="portalQuery" class="pfsp-v11-input" placeholder="Tìm Verify ID, SHA-256, tên file, owner, project, tag">
+        <select id="portalStatusFilter" class="pfsp-v11-select" style="max-width:190px"><option value="">Mọi trạng thái</option><option value="active">Active</option><option value="revoked">Revoked</option><option value="suspended">Suspended</option><option value="archived">Archived</option></select>
+        <button id="portalSearchBtn" class="pfsp-v11-btn primary" type="button">Tìm</button>
+        <button id="refreshPortalBtn" class="pfsp-v11-btn" type="button">Refresh</button>
+      </div>
+      <div id="searchStatus" class="pfsp-v11-result warn">Nhập từ khóa hoặc bấm Tìm để tra cứu.</div>
+      <div class="pfsp-v11-table-scroll"><table class="pfsp-final-table"><thead><tr><th>ID / File</th><th>SHA-256</th><th>Status</th><th>Owner / Project</th><th>Registered</th><th>Actions</th></tr></thead><tbody id="searchRows"><tr><td colspan="6">Chưa tìm.</td></tr></tbody></table></div>
+    </div>
+    <aside class="pfsp-v11-card">
+      <h2>Trạng thái portal</h2>
+      <div id="portalStatus" class="pfsp-v11-result warn">Đang tải...</div>
+      <p class="pfsp-v11-small">Trust Portal chỉ hiển thị metadata công khai. PDF thật vẫn được hash cục bộ trong trình duyệt.</p>
+    </aside>
+  </section>
+
+  <section class="pfsp-v11-card">
+    <h2>Verify nhanh bằng ID + file PDF/hash</h2>
+    <div class="pfsp-v11-grid">
+      <div>
+        <label class="pfsp-v11-small">Verify ID</label>
+        <input id="verifyId" class="pfsp-v11-input" placeholder="PFSP-YYYYMMDD-XXXXXX">
+      </div>
+      <div>
+        <label class="pfsp-v11-small">SHA-256 nếu đã có</label>
+        <input id="verifyHash" class="pfsp-v11-input" placeholder="64 ký tự hex">
+      </div>
+      <div>
+        <label class="pfsp-v11-small">Dung lượng file nếu đã có</label>
+        <input id="verifySize" class="pfsp-v11-input" placeholder="bytes">
+      </div>
+      <div>
+        <label class="pfsp-v11-small">Hoặc chọn PDF để hash cục bộ</label>
+        <input id="verifyFile" class="pfsp-v11-input" type="file" accept="application/pdf,.pdf">
+      </div>
+    </div>
+    <div class="pfsp-v11-actions"><button id="verifyBtn" class="pfsp-v11-btn primary" type="button">Xác minh</button></div>
+    <div id="verifyStatus" class="pfsp-v11-result warn">Chưa xác minh.</div>
+    <div id="certificatePreview" class="pfsp-v11-result warn">Certificate preview sẽ hiện ở đây.</div>
+  </section>
+
+  <section class="pfsp-v11-grid sidebar">
+    <div class="pfsp-v11-card">
+      <h2>Records mới nhất</h2>
+      <div class="pfsp-v11-table-scroll"><table class="pfsp-final-table"><thead><tr><th>ID / File</th><th>SHA-256</th><th>Status</th><th>Owner / Project</th><th>Registered</th><th>Actions</th></tr></thead><tbody id="recentRecords"><tr><td colspan="6">Đang tải...</td></tr></tbody></table></div>
+    </div>
+    <aside id="badgeBox" class="pfsp-v11-card">
+      <h2>Public verification badge</h2>
+      <input id="badgeId" class="pfsp-v11-input" placeholder="Verify ID để tạo badge">
+      <div class="pfsp-v11-actions"><button id="badgeBtn" class="pfsp-v11-btn good" type="button">Tạo badge</button></div>
+      <div id="badgeStatus" class="pfsp-v11-result warn">Chưa tạo badge.</div>
+      <div id="badgePreview" class="pfsp-v11-result">Badge preview.</div>
+      <textarea id="badgeCode" class="pfsp-v11-textarea" readonly placeholder="HTML embed code"></textarea>
+    </aside>
+  </section>
+
+  <section class="pfsp-v11-grid sidebar">
+    <div class="pfsp-v11-card">
+      <h2>Batch verify</h2>
+      <p class="pfsp-v11-small">Mỗi dòng: Verify ID, verify URL, hoặc JSON certificate. Có thể kèm hash/size.</p>
+      <textarea id="batchInput" class="pfsp-v11-textarea" placeholder="PFSP-20260613-ABCDEF sha256 size"></textarea>
+      <div class="pfsp-v11-actions"><button id="batchBtn" class="pfsp-v11-btn primary" type="button">Batch verify</button></div>
+      <div id="batchStatus" class="pfsp-v11-result warn">Chưa chạy batch.</div>
+      <div class="pfsp-v11-table-scroll"><table class="pfsp-final-table"><thead><tr><th>#</th><th>ID</th><th>Verdict</th><th>Trust</th><th>Message</th></tr></thead><tbody id="batchRows"><tr><td colspan="5">Chưa có kết quả.</td></tr></tbody></table></div>
+    </div>
+    <aside class="pfsp-v11-card">
+      <h2>Tải certificate bản in</h2>
+      <input id="certId" class="pfsp-v11-input" placeholder="Verify ID">
+      <div class="pfsp-v11-actions"><button id="certBtn" class="pfsp-v11-btn" type="button">Tải dữ liệu certificate</button></div>
+      <div id="certStatus" class="pfsp-v11-result warn">Chưa tải certificate.</div>
+    </aside>
+  </section>
+
+  <footer class="pfsp-v11-footer">PDF Fusion Smart Pro · Verify System v13 Trust Portal</footer>
+</main>
+<script src="./assets/pfsp-verify-asset-guard.js?v=13.0.0-trust-portal" defer></script>
+<script src="./assets/pfsp-trust-portal.js?v=13.0.0-trust-portal" defer></script>
+</body>
+</html>

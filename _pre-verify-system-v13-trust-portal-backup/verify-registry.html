@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Trusted Verify Registry v12 - Kiểm tra PDF thật/giả | PDF Fusion Smart Pro</title>
+  <meta name="description" content="Trusted Verify Registry v12 giúp kiểm tra Verify ID, SHA-256, trust score, timeline, trạng thái thu hồi, tạm khóa, hết hạn và phát hiện PDF bị chỉnh sửa hoặc giả mạo.">
+  <link rel="canonical" href="./verify-registry.html">
+  <link rel="icon" href="./favicon.svg" type="image/svg+xml">
+  <style>
+    :root{font-family:Inter,ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Arial;color:#0f172a;background:#f8fafc}body{margin:0}.wrap{max-width:1040px;margin:auto;padding:28px 18px}.hero{padding:28px;border-radius:28px;background:linear-gradient(135deg,#dcfce7,#e0f2fe);box-shadow:0 24px 70px rgba(15,23,42,.1)}h1{margin:0 0 10px;font-size:clamp(30px,5vw,54px)}p{line-height:1.65}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px;margin-top:18px}.card{background:#fff;border:1px solid #e2e8f0;border-radius:22px;padding:18px;box-shadow:0 14px 36px rgba(15,23,42,.06)}code,pre{background:#f1f5f9;border-radius:10px;padding:.15rem .35rem}pre{padding:12px;overflow:auto}.good{color:#15803d}.bad{color:#b91c1c}.warn{color:#b45309}.btns{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}.btn{display:inline-flex;align-items:center;justify-content:center;border-radius:999px;padding:11px 16px;text-decoration:none;font-weight:800;background:#0f172a;color:#fff}.btn.alt{background:#fff;color:#0f172a;border:1px solid #cbd5e1}.steps li{margin:.45rem 0}</style>
+  <link rel="stylesheet" href="./assets/pfsp-verify-final.css?v=12.1.1-ui-hotfix">
+<style id="pfsp-verify-critical-css">
+/* Inline fallback: keeps Verify UI styled even when cached/missing external CSS. */
+/* PDF Fusion Smart Pro - Verify System v12 BIG UPDATE UI */
+:root{color-scheme:dark;--pfsp-bg:#07111f;--pfsp-bg2:#0f172a;--pfsp-card:rgba(15,23,42,.84);--pfsp-card2:rgba(30,41,59,.72);--pfsp-border:rgba(148,163,184,.22);--pfsp-text:#e5edf7;--pfsp-muted:#9fb2ca;--pfsp-good:#22c55e;--pfsp-warn:#f59e0b;--pfsp-bad:#ef4444;--pfsp-info:#38bdf8;--pfsp-primary:#60a5fa;--pfsp-purple:#a78bfa;--pfsp-shadow:0 28px 90px rgba(0,0,0,.38);--pfsp-radius:24px}*{box-sizing:border-box}body.pfsp-v11-page{margin:0;min-height:100vh;background:radial-gradient(circle at 8% 4%,rgba(56,189,248,.22),transparent 30%),radial-gradient(circle at 86% 10%,rgba(167,139,250,.18),transparent 28%),linear-gradient(135deg,var(--pfsp-bg),#020617 72%);font-family:Inter,ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;color:var(--pfsp-text)}a{color:inherit}.pfsp-v11-wrap{width:min(1220px,calc(100% - 28px));margin:0 auto;padding:26px 0 44px}.pfsp-v11-hero,.pfsp-v11-card,.pfsp-final-shell{position:relative;border:1px solid var(--pfsp-border);background:linear-gradient(180deg,rgba(15,23,42,.92),rgba(15,23,42,.70));box-shadow:var(--pfsp-shadow);border-radius:var(--pfsp-radius);padding:24px;overflow:hidden}.pfsp-v11-hero:before,.pfsp-v11-card:before,.pfsp-final-shell:before{content:"";position:absolute;inset:0;background:linear-gradient(120deg,rgba(96,165,250,.12),transparent 45%,rgba(34,197,94,.08));pointer-events:none}.pfsp-v11-hero>* ,.pfsp-v11-card>* ,.pfsp-final-shell>*{position:relative}.pfsp-v11-top{display:flex;align-items:flex-start;justify-content:space-between;gap:18px;flex-wrap:wrap}.pfsp-v11-brand{display:flex;gap:16px;align-items:flex-start}.pfsp-v11-logo,.pfsp-final-badge{width:58px;height:58px;border-radius:20px;display:grid;place-items:center;font-size:30px;background:linear-gradient(135deg,rgba(96,165,250,.22),rgba(34,197,94,.18));border:1px solid rgba(147,197,253,.30);box-shadow:inset 0 0 34px rgba(255,255,255,.04)}.pfsp-v11-kicker{font-size:12px;letter-spacing:.13em;text-transform:uppercase;color:#93c5fd;font-weight:900}.pfsp-v11-hero h1{font-size:clamp(32px,5vw,60px);line-height:1;margin:8px 0 12px;letter-spacing:-.04em}.pfsp-v11-hero p,.pfsp-v11-card p{color:var(--pfsp-muted);line-height:1.68;margin:0}.pfsp-v11-actions,.pfsp-final-actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:14px}.pfsp-v11-btn,.pfsp-final-actions button,.pfsp-final-actions a{appearance:none;border:1px solid rgba(148,163,184,.28);background:rgba(15,23,42,.62);color:#eaf2ff;border-radius:999px;padding:10px 15px;font-weight:900;text-decoration:none;cursor:pointer;box-shadow:0 10px 30px rgba(0,0,0,.16);transition:transform .16s ease,border-color .16s ease,background .16s ease}.pfsp-v11-btn:hover,.pfsp-final-actions button:hover,.pfsp-final-actions a:hover{transform:translateY(-1px);border-color:rgba(147,197,253,.65);background:rgba(30,41,59,.92)}.pfsp-v11-btn.primary,.pfsp-final-actions .primary{background:linear-gradient(135deg,#2563eb,#0891b2);border-color:rgba(147,197,253,.60)}.pfsp-v11-btn.good,.pfsp-final-actions .good{background:linear-gradient(135deg,#15803d,#0f766e);border-color:rgba(74,222,128,.55)}.pfsp-v11-btn.danger,.pfsp-final-actions .danger{background:linear-gradient(135deg,#991b1b,#be123c);border-color:rgba(252,165,165,.55)}.pfsp-v11-btn.ghost{background:rgba(2,6,23,.28)}.pfsp-v11-status{display:inline-flex;margin-top:18px;border-radius:999px;padding:8px 12px;font-weight:950;font-size:12px;letter-spacing:.08em;text-transform:uppercase;border:1px solid var(--pfsp-border)}.pfsp-v11-status.good,.pfsp-v11-badge.good{background:rgba(34,197,94,.13);border-color:rgba(34,197,94,.45);color:#bbf7d0}.pfsp-v11-status.warn,.pfsp-v11-badge.warn{background:rgba(245,158,11,.13);border-color:rgba(245,158,11,.45);color:#fde68a}.pfsp-v11-status.bad,.pfsp-v11-badge.bad{background:rgba(239,68,68,.14);border-color:rgba(239,68,68,.52);color:#fecaca}.pfsp-v11-docid{margin-top:12px;font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-weight:950;font-size:clamp(16px,3vw,30px);word-break:break-all;color:#f8fafc}.pfsp-v11-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin-top:16px}.pfsp-v11-grid.sidebar{grid-template-columns:minmax(0,1.5fr) minmax(280px,.8fr)}.pfsp-v11-grid.three{grid-template-columns:repeat(3,minmax(0,1fr))}.pfsp-v11-card h2,.pfsp-final-shell h3{margin:0 0 12px;font-size:20px;letter-spacing:-.02em}.pfsp-v11-result{border:1px solid var(--pfsp-border);border-radius:20px;padding:15px;background:rgba(2,6,23,.42);color:#d8e6f9;word-break:break-word}.pfsp-v11-result.good{background:rgba(20,83,45,.22);border-color:rgba(34,197,94,.42)}.pfsp-v11-result.warn{background:rgba(120,53,15,.20);border-color:rgba(245,158,11,.36)}.pfsp-v11-result.bad{background:rgba(127,29,29,.22);border-color:rgba(239,68,68,.44)}.pfsp-v11-verdict{font-weight:1000;letter-spacing:.02em;color:#fff}.pfsp-v11-message{margin-top:7px;color:#cbd5e1;line-height:1.55}.pfsp-v11-kv{display:grid;grid-template-columns:minmax(120px,.44fr) minmax(0,1fr);gap:8px 12px;margin-top:14px;align-items:start}.pfsp-v11-kv b{color:#93c5fd;font-size:12px;text-transform:uppercase;letter-spacing:.08em}.pfsp-v11-kv span,.pfsp-v11-kv code{min-width:0;color:#e5e7eb;font-family:ui-monospace,SFMono-Regular,Consolas,monospace;word-break:break-all}.pfsp-v11-small{font-size:12px;color:#a9bdd6;line-height:1.55}.pfsp-v11-tabs{display:flex;gap:8px;flex-wrap:wrap;margin:14px 0}.pfsp-v11-tab{border:1px solid var(--pfsp-border);background:rgba(15,23,42,.52);color:#dbeafe;border-radius:999px;padding:9px 13px;cursor:pointer;font-weight:900}.pfsp-v11-tab.active{background:linear-gradient(135deg,#2563eb,#7c3aed);border-color:rgba(196,181,253,.65);color:white}.pfsp-v11-panel.hidden,.hidden{display:none!important}.pfsp-v11-drop{min-height:128px;border:1.5px dashed rgba(147,197,253,.45);border-radius:22px;display:grid;place-items:center;background:rgba(15,23,42,.44);margin-bottom:12px}.pfsp-v11-drop:before{content:"Thả file vào đây hoặc chọn file";color:#bfdbfe;font-weight:900}.pfsp-v11-drop.drag{background:rgba(37,99,235,.22);border-color:#93c5fd}.pfsp-v11-input,.pfsp-v11-select,.pfsp-v11-textarea,.pfsp-final-actions input,.pfsp-final-textarea{width:100%;border:1px solid rgba(148,163,184,.28);background:rgba(2,6,23,.58);color:#f8fafc;border-radius:16px;padding:12px 13px;outline:none}.pfsp-v11-drop .pfsp-v11-input{max-width:360px}.pfsp-v11-textarea,.pfsp-final-textarea{min-height:130px;resize:vertical;font-family:ui-monospace,SFMono-Regular,Consolas,monospace;line-height:1.5}.pfsp-final-textarea{margin-top:12px}.pfsp-v11-table-scroll{overflow:auto;border:1px solid var(--pfsp-border);border-radius:18px}.pfsp-final-table{width:100%;border-collapse:collapse;min-width:760px}.pfsp-final-table th,.pfsp-final-table td{text-align:left;vertical-align:top;padding:12px;border-bottom:1px solid rgba(148,163,184,.16);color:#dbeafe}.pfsp-final-table th{font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:#93c5fd;background:rgba(15,23,42,.62)}.pfsp-v11-badge{display:inline-flex;border:1px solid var(--pfsp-border);border-radius:999px;padding:4px 8px;font-size:11px;font-weight:950;text-transform:uppercase}.pfsp-v11-metric b{display:block;font-size:34px;color:#fff}.pfsp-v11-metric span{color:#a9bdd6;font-weight:800}.pfsp-v11-footer{text-align:center;margin-top:24px;color:#7d91ad;font-size:12px}.pfsp-final-head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}.pfsp-final-title{display:flex;align-items:center;gap:12px}.pfsp-final-chip{border:1px solid var(--pfsp-border);border-radius:999px;padding:8px 12px;text-decoration:none;font-weight:900}.pfsp-tv-audit{margin-top:10px;display:grid;gap:6px}.pfsp-tv-audit div{display:grid;grid-template-columns:1fr 1.2fr .9fr;gap:8px;border:1px solid rgba(148,163,184,.16);border-radius:12px;padding:8px;color:#cbd5e1}.pfsp-v12-hero-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(240px,340px);gap:18px;align-items:end}.pfsp-v12-score-card{border:1px solid rgba(147,197,253,.25);border-radius:22px;padding:18px;background:rgba(2,6,23,.38)}.pfsp-v12-score-top{display:flex;align-items:end;justify-content:space-between;gap:12px}.pfsp-v12-score-top span{color:#93c5fd;font-weight:950;text-transform:uppercase;font-size:12px;letter-spacing:.08em}.pfsp-v12-score-top b{font-size:48px;line-height:.9;color:#fff}.pfsp-v12-meter{margin:12px 0;height:12px;border-radius:999px;background:rgba(148,163,184,.20);overflow:hidden}.pfsp-v12-meter i{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,#ef4444,#f59e0b,#22c55e);transition:width .3s ease}.pfsp-v12-checks{display:grid;gap:8px}.pfsp-v12-check{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:start;border:1px solid rgba(148,163,184,.18);border-radius:14px;padding:10px;background:rgba(2,6,23,.28)}.pfsp-v12-check.good{border-color:rgba(34,197,94,.35)}.pfsp-v12-check.bad{border-color:rgba(239,68,68,.38)}.pfsp-v12-timeline{display:grid;gap:8px}.pfsp-v12-time{border-left:3px solid rgba(96,165,250,.55);padding:8px 10px;background:rgba(2,6,23,.26);border-radius:0 12px 12px 0}.pfsp-v12-time b{display:block;color:#fff}.pfsp-v12-time span{display:block;color:#a9bdd6;font-size:12px}.pfsp-v12-batch-list{display:grid;gap:8px}.pfsp-v12-batch-row{border:1px solid rgba(148,163,184,.18);border-radius:14px;padding:10px;background:rgba(2,6,23,.34)}.pfsp-v12-batch-row.good{border-color:rgba(34,197,94,.40)}.pfsp-v12-batch-row.warn{border-color:rgba(245,158,11,.40)}.pfsp-v12-batch-row.bad{border-color:rgba(239,68,68,.42)}@media(max-width:900px){.pfsp-v11-grid,.pfsp-v11-grid.sidebar,.pfsp-v11-grid.three,.pfsp-v12-hero-grid{grid-template-columns:1fr}.pfsp-v11-hero,.pfsp-v11-card,.pfsp-final-shell{padding:18px}.pfsp-v11-kv{grid-template-columns:1fr}.pfsp-v11-logo,.pfsp-final-badge{width:48px;height:48px;border-radius:16px}.pfsp-v11-brand{align-items:flex-start}.pfsp-v12-score-top b{font-size:40px}}
+
+</style>
+
+</head>
+<body>
+  <main class="wrap">
+    <section class="hero">
+      <h1>Trusted Verify Registry v12</h1>
+      <p><b>QR/hash tự mang theo chỉ chứng minh file khớp với thông tin trong link.</b> Registry v12 xác nhận bản ghi có được server đăng ký thật không, chữ ký HMAC có hợp lệ không, có bị thu hồi/tạm khóa/hết hạn không, và PDF hiện tại có bị sửa so với bản gốc không.</p>
+      <div class="btns"><a class="btn" href="./index.html">Mở app PDF Fusion</a><a class="btn alt" href="./verify.html">Mở trang Verify</a><a class="btn alt" href="./admin-verify.html">Admin Console</a></div>
+    </section>
+
+    <section class="grid">
+      <article class="card"><h2 class="good">✅ THẬT</h2><p>Verify ID có trong registry, trạng thái <code>active</code>, chưa hết hạn, server signature hợp lệ, và SHA-256 của PDF tải lên khớp bản ghi gốc.</p></article>
+      <article class="card"><h2 class="bad">❌ GIẢ / ĐÃ SỬA</h2><p>Verify ID có trong registry nhưng SHA-256 của PDF tải lên khác bản gốc. Chỉ cần sửa 1 byte là hash sẽ khác.</p></article>
+      <article class="card"><h2 class="warn">⚠️ CẦN FILE</h2><p>ID có thật nhưng chưa upload PDF hoặc chưa cung cấp SHA-256. Trust score sẽ cảnh báo vì chưa đủ dữ liệu để kết luận.</p></article>
+      <article class="card"><h2 class="bad">🚫 THU HỒI / TẠM KHÓA / HẾT HẠN</h2><p>Bản ghi tồn tại nhưng admin đã revoke/suspend hoặc certificate đã expired. Trang verify sẽ chặn kết luận thật.</p></article>
+    </section>
+
+    <section class="card">
+      <h2>Cách hoạt động</h2>
+      <ol class="steps">
+        <li>App xuất PDF và tính <code>SHA-256</code> cho file kết quả trong trình duyệt.</li>
+        <li>Verify System đăng ký <code>Verify ID + SHA-256 + metadata</code> vào <code>data/verify-registry.json</code> qua API Vercel/GitHub.</li>
+        <li>API ký bản ghi bằng <code>PFSP_VERIFY_SIGNING_SECRET</code> để tạo server signature.</li>
+        <li>Khi người dùng mở <code>verify.html</code>, trang gọi <code>/api/verify</code>, hiển thị verdict, trust score, checks và timeline.</li>
+        <li>Người dùng upload PDF cần kiểm tra. Trình duyệt tính SHA-256 tại chỗ, không upload file lên server.</li>
+      </ol>
+    </section>
+
+    <section class="card">
+      <h2>Chức năng v12</h2>
+      <div class="grid">
+        <article><h3>Trust Score</h3><p>API trả <code>trustScore</code> 0-100 và <code>trustLevel</code> dựa trên signature, status, expiry, hash và size.</p></article>
+        <article><h3>Batch Verify</h3><p>Verify nhiều ID/link/certificate một lần bằng <code>POST action=batch-verify</code>.</p></article>
+        <article><h3>Bulk Register</h3><p>Admin đăng ký nhiều record, có dry-run để xem trước và tránh ghi nhầm.</p></article>
+        <article><h3>Repair + Re-sign</h3><p>Admin có thể normalize registry, tạo fingerprint/link còn thiếu và ký lại record khi cần.</p></article>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Cấu hình backend registry trên Vercel</h2>
+      <p>Trong Vercel → Project Settings → Environment Variables, thêm:</p>
+      <pre>PFSP_VERIFY_SIGNING_SECRET=chuoi_ky_hmac_rieng
+PFSP_VERIFY_ADMIN_SECRET=mat_khau_admin_manh
+PFSP_PUBLIC_BASE_URL=https://your-domain.example
+PFSP_VERIFY_ALLOWED_ORIGINS=https://your-domain.example
+PFSP_CORS_ORIGIN=https://your-domain.example
+PFSP_GITHUB_TOKEN=github_pat_co_quyen_contents_write
+PFSP_GITHUB_OWNER=ten_owner
+PFSP_GITHUB_REPO=ten_repo
+PFSP_GITHUB_BRANCH=main
+PFSP_REGISTRY_PATH=data/verify-registry.json</pre>
+      <p>Nếu chưa cấu hình GitHub token, API vẫn kiểm tra được registry tĩnh, nhưng khi đăng ký sẽ trả về JSON patch để bạn tự commit vào <code>data/verify-registry.json</code>.</p>
+    </section>
+
+    <section class="card">
+      <h2>Endpoint chính</h2>
+      <pre>GET /api/verify?id=PFSP-...&sha256=...&size=...
+GET /api/verify?action=self-test
+GET /api/verify?action=lookup-hash&sha256=...
+GET /api/verify?action=certificate&id=PFSP-...
+POST /api/verify { "action":"batch-verify", "items":[...] }
+POST /api/verify { "action":"auto-register", "certificate": {...} }
+POST /api/verify { "action":"register", "certificate": {...}, "adminSecret":"..." }
+POST /api/verify { "action":"bulk-register", "items":[...], "adminSecret":"..." }
+POST /api/verify { "action":"revoke|suspend|restore|set-expiry|repair", "id":"PFSP-...", "adminSecret":"..." }</pre>
+    </section>
+  </main>
+  <section class="pfsp-final-shell" style="width:min(960px,100%);margin:24px auto"><div class="pfsp-final-title"><div class="pfsp-final-badge">🛠️</div><div><h2>Verify System v12 BIG UPDATE</h2><p>Bản nâng cấp có trust score, timeline, batch verify, bulk register, hash lookup, certificate export, suspend/restore/revoke/expiry, audit log, backup, repair/re-sign và admin diagnostics.</p></div></div><div class="pfsp-final-actions"><a class="primary" href="./admin-verify.html">Mở Admin Verify Dashboard</a><a href="./verify.html">Mở trang verify</a></div></section>
+</body>
+</html>

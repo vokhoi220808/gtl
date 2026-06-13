@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Trusted Verify Registry - Kiểm tra PDF thật/giả | PDF Fusion Smart Pro</title>
+  <meta name="description" content="Trusted Verify Registry giúp kiểm tra Verify ID, SHA-256, trạng thái thu hồi, hết hạn và phát hiện PDF bị chỉnh sửa hoặc giả mạo.">
+  <link rel="canonical" href="./verify-registry.html">
+  <link rel="icon" href="./favicon.svg" type="image/svg+xml">
+  <style>
+    :root{font-family:Inter,ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Arial;color:#0f172a;background:#f8fafc}body{margin:0}.wrap{max-width:980px;margin:auto;padding:28px 18px}.hero{padding:28px;border-radius:28px;background:linear-gradient(135deg,#dcfce7,#e0f2fe);box-shadow:0 24px 70px rgba(15,23,42,.1)}h1{margin:0 0 10px;font-size:clamp(30px,5vw,54px)}p{line-height:1.65}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px;margin-top:18px}.card{background:#fff;border:1px solid #e2e8f0;border-radius:22px;padding:18px;box-shadow:0 14px 36px rgba(15,23,42,.06)}code,pre{background:#f1f5f9;border-radius:10px;padding:.15rem .35rem}pre{padding:12px;overflow:auto}.good{color:#15803d}.bad{color:#b91c1c}.warn{color:#b45309}.btns{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}.btn{display:inline-flex;align-items:center;justify-content:center;border-radius:999px;padding:11px 16px;text-decoration:none;font-weight:800;background:#0f172a;color:#fff}.btn.alt{background:#fff;color:#0f172a;border:1px solid #cbd5e1}.steps li{margin:.45rem 0}</style>
+</head>
+<body>
+  <main class="wrap">
+    <section class="hero">
+      <h1>Trusted Verify Registry</h1>
+      <p><b>QR/hash tự mang theo chỉ chứng minh file khớp với thông tin trong link.</b> Registry mới giúp biết bản ghi đó có được đăng ký thật không, có bị thu hồi không, có hết hạn không, và file PDF hiện tại có bị sửa so với bản gốc không.</p>
+      <div class="btns"><a class="btn" href="./index.html">Mở app PDF Fusion</a><a class="btn alt" href="./verify.html">Mở trang Verify</a></div>
+    </section>
+
+    <section class="grid">
+      <article class="card"><h2 class="good">✅ THẬT</h2><p>Verify ID có trong registry, trạng thái <code>active</code>, chưa hết hạn, và SHA-256 của PDF tải lên khớp bản ghi gốc.</p></article>
+      <article class="card"><h2 class="bad">❌ GIẢ / ĐÃ SỬA</h2><p>Verify ID có trong registry nhưng SHA-256 của PDF tải lên khác bản gốc. Chỉ cần sửa 1 byte là hash sẽ khác.</p></article>
+      <article class="card"><h2 class="warn">⚠️ CHƯA XÁC ĐỊNH</h2><p>ID hoặc hash chỉ nằm trong link/certificate nhưng chưa được registry công khai ghi nhận. Không nên gọi là bản thật.</p></article>
+      <article class="card"><h2 class="bad">🚫 THU HỒI / HẾT HẠN</h2><p>Bản ghi tồn tại nhưng đã bị admin thu hồi hoặc quá hạn xác minh. Trang verify sẽ cảnh báo rõ.</p></article>
+    </section>
+
+    <section class="card">
+      <h2>Cách hoạt động</h2>
+      <ol class="steps">
+        <li>App xuất PDF và tính <code>SHA-256</code> cho file kết quả.</li>
+        <li>Admin đăng ký <code>Verify ID + SHA-256 + metadata</code> vào <code>data/verify-registry.json</code> qua API hoặc commit thủ công.</li>
+        <li>Khi người dùng mở <code>verify.html</code>, trang kiểm tra link/certificate và gọi <code>/api/verify</code>.</li>
+        <li>Người dùng upload PDF cần kiểm tra. Trình duyệt tính SHA-256 tại chỗ, rồi so với registry.</li>
+      </ol>
+    </section>
+
+    <section class="card">
+      <h2>Cấu hình backend registry trên Vercel</h2>
+      <p>Trong Vercel → Project Settings → Environment Variables, thêm:</p>
+      <pre>VERIFY_ADMIN_SECRET=mat_khau_admin_manh
+PFSP_VERIFY_SIGNING_SECRET=chuoi_ky_hmac_rieng
+GITHUB_TOKEN=github_pat_co_quyen_contents_write
+GITHUB_OWNER=ten_owner
+GITHUB_REPO=ten_repo
+GITHUB_BRANCH=main
+PFSP_REGISTRY_PATH=data/verify-registry.json</pre>
+      <p>Nếu chưa cấu hình GitHub token, API vẫn kiểm tra được registry tĩnh, nhưng khi đăng ký sẽ trả về JSON patch để bạn tự commit vào <code>data/verify-registry.json</code>.</p>
+    </section>
+
+    <section class="card">
+      <h2>Endpoint</h2>
+      <pre>GET /api/verify?id=PFSP-...&sha256=...&size=...
+POST /api/verify { "action":"register", "certificate": {...}, "adminSecret":"..." }
+POST /api/verify { "action":"revoke", "id":"PFSP-...", "reason":"...", "adminSecret":"..." }</pre>
+    </section>
+  </main>
+</body>
+</html>

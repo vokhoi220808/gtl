@@ -1,0 +1,33 @@
+{
+  "name": "pdf-fusion-smart-pro",
+  "version": "13.0.0-trust-portal",
+  "private": true,
+  "description": "Browser-first PDF toolkit with Verify System v12.2 stability hardening and v13 Trust Portal: public search, printable certificates, verification badges, rate limits, diagnostics, batch verify, trusted registry and admin console.",
+  "scripts": {
+    "start": "python -m http.server 5500",
+    "serve": "python -m http.server 5500",
+    "check:api": "node --check api/verify.js",
+    "check:assets": "find assets -maxdepth 1 -name '*.js' -print0 | xargs -0 -n1 node --check",
+    "check:js": "npm run check:api && npm run check:assets && npm run check:portal",
+    "verify:health:local": "node -e \"const h=require('./api/verify.js'); const req={method:'GET',url:'/api/verify?action=health',headers:{},socket:{}}; const res={setHeader(){},end(x){console.log(x)},set statusCode(v){this._s=v},get statusCode(){return this._s}}; h(req,res)\"",
+    "check:portal": "node --check assets/pfsp-trust-portal.js && node --check assets/pfsp-trust-certificate.js && node --check assets/pfsp-verify-asset-guard.js",
+    "predeploy-check": "node scripts/predeploy-check.js"
+  },
+  "keywords": [
+    "pdf",
+    "pwa",
+    "ocr",
+    "watermark",
+    "signature",
+    "verify",
+    "sha256",
+    "serverless",
+    "trusted-registry",
+    "vercel",
+    "trust-portal",
+    "certificate",
+    "verification-badge",
+    "rate-limit"
+  ],
+  "license": "MIT"
+}
