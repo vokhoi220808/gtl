@@ -1,7 +1,7 @@
 {
   "version": "PFSP-VERIFY-REGISTRY-v4",
   "schemaVersion": 4,
-  "updatedAt": "2026-06-13T00:00:00Z",
+  "updatedAt": "2026-06-13T06:25:16.095Z",
   "settings": {
     "shortQr": true,
     "serverSigned": true,
@@ -16,24 +16,104 @@
     "trustScoreSupported": true,
     "schema": "v4"
   },
-  "records": [],
-  "auditLog": [],
+  "records": [
+    {
+      "id": "PFSP-20260612-K2DUOD",
+      "sha256": "b66e9b23d940cf6b525dc9a605d2f480bff465f003648fbf6f426b9f543d626c",
+      "size": 755600,
+      "fileName": "pdf-fusion.pdf",
+      "mimeType": "application/pdf",
+      "createdAt": "2026-06-12T16:23:05.000Z",
+      "registeredAt": "2026-06-13T06:25:16.093Z",
+      "updatedAt": "2026-06-13T06:25:16.093Z",
+      "origin": "https://gtl-roan.vercel.app",
+      "app": "PDF Fusion Smart Pro",
+      "appVersion": "7.0.0-document-hash-verify",
+      "sourceBundleSha256": "91130c0472df140c517f96dec221e732c76ea797958098417f2d9c182eab0202",
+      "checksum": "D9C9E3E6E918B783C505DE18",
+      "status": "active",
+      "expiresAt": "",
+      "registeredBy": "PDF Fusion Smart Pro UI",
+      "registrationMode": "manual-admin",
+      "owner": "",
+      "project": "",
+      "documentTitle": "",
+      "tags": [],
+      "note": "",
+      "policy": {
+        "retention": "",
+        "visibility": "public-metadata"
+      },
+      "signatureVersion": "PFSP-SERVER-SIGNED-CERT-v4",
+      "signatureAlgorithm": "HMAC-SHA256",
+      "revokedAt": "",
+      "restoredAt": "",
+      "suspendedAt": "",
+      "revokeReason": "",
+      "suspendReason": "",
+      "fingerprint": "2FAFF3BAA9731CE4721E2CA0CDEF3AC4",
+      "shortVerifyUrl": "https://gtl-roan.vercel.app/verify.html?id=PFSP-20260612-K2DUOD",
+      "verifyUrl": "https://gtl-roan.vercel.app/verify.html?id=PFSP-20260612-K2DUOD&sha256=b66e9b23d940cf6b525dc9a605d2f480bff465f003648fbf6f426b9f543d626c&size=755600",
+      "certificateSignature": "b728f0370656145d99f68cfa8dd0de153ad90b6fe444b77861a833f63496c0a4",
+      "serverSignature": "b728f0370656145d99f68cfa8dd0de153ad90b6fe444b77861a833f63496c0a4",
+      "history": [
+        {
+          "time": "2026-06-13T06:25:16.095Z",
+          "action": "manual-register",
+          "actor": "admin",
+          "result": "REGISTERED",
+          "message": "",
+          "sha256": "b66e9b23d940cf6b525dc9a605d2f480bff465f003648fbf6f426b9f543d626c",
+          "status": "active",
+          "origin": "https://gtl-roan.vercel.app"
+        },
+        {
+          "time": "2026-06-13T06:25:16.095Z",
+          "action": "created",
+          "actor": "PDF Fusion Smart Pro UI",
+          "result": "CREATED",
+          "message": "",
+          "sha256": "b66e9b23d940cf6b525dc9a605d2f480bff465f003648fbf6f426b9f543d626c",
+          "status": "active",
+          "origin": "https://gtl-roan.vercel.app"
+        }
+      ]
+    }
+  ],
+  "auditLog": [
+    {
+      "time": "2026-06-13T06:25:16.095Z",
+      "action": "register",
+      "id": "PFSP-20260612-K2DUOD",
+      "sha256": "b66e9b23d940cf6b525dc9a605d2f480bff465f003648fbf6f426b9f543d626c",
+      "result": "REGISTERED",
+      "ok": true,
+      "message": "Manual admin registration.",
+      "actor": "admin",
+      "clientIpHash": "91844C3DE8832ABAEFDC2743",
+      "userAgentHash": "8F5A02445266838A0004FC48",
+      "requestId": "",
+      "origin": "https://gtl-roan.vercel.app"
+    }
+  ],
   "snapshots": [],
   "integrity": {
     "ok": true,
-    "recordCount": 0,
-    "activeCount": 0,
+    "sha256": "5bed203aedbe12a8c04b0cfcd6b92f8333fb7b6c6718f0465e9e7f85b8821537",
+    "recordCount": 1,
+    "activeCount": 1,
     "revokedCount": 0,
     "suspendedCount": 0,
     "expiredCount": 0,
-    "signedRecordCount": 0,
+    "signedRecordCount": 1,
     "unsignedRecordCount": 0,
     "invalidSignatureIds": [],
     "unsignedIds": [],
     "duplicateIds": [],
     "duplicateHashes": [],
+    "expiredIds": [],
     "problems": [],
     "warnings": [],
-    "checkedAt": "2026-06-13T00:00:00Z"
+    "checkedAt": "2026-06-13T06:25:16.168Z"
   }
 }
