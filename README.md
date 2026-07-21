@@ -15,7 +15,7 @@ Bản này giữ nguyên bộ công cụ PDF hiện có, tiếp tục nâng cấ
 - Predeploy checklist: `npm run predeploy-check`.
 - Service Worker cache version `14.4.0-enterprise-trust-suite`.
 - Vẫn giữ toàn bộ chức năng v12: trust score, timeline, batch verify, bulk register, hash lookup, certificate export, suspend/restore/revoke/expiry, audit log, backup, repair/re-sign và admin diagnostics.
-
+- Trang chủ: https://gtl-roan.vercel.app
 ## Trang chính của Verify System
 
 ```txt
