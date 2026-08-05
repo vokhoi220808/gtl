@@ -20,6 +20,8 @@ jobs:
         run: npm install --ignore-scripts
       - name: Run syntax checks
         run: npm run check:js
+      - name: Run PWA integrity checks
+        run: npm run check:pwa
       - name: Run predeploy check
         run: npm run predeploy-check
       - name: Run Verify System E2E smoke test
