@@ -1,4 +1,4 @@
-const VERSION = '14.4.0-enterprise-trust-suite';
+const VERSION = '14.4.1-watermark-hotfix';
 const CACHE_NAME = `pdf-fusion-${VERSION}`;
 const OFFLINE_URL = './offline.html';
 const APP_SHELL = [
@@ -14,17 +14,18 @@ const APP_SHELL = [
   './verify-registry.html',
   './trust-portal.html',
   './verify-certificate.html',
-  './assets/pfsp-admin-verify.js',
-  './assets/pfsp-verify-final-page.js',
-  './assets/pfsp-verify-final-main.js',
-  './assets/pfsp-verify-final.css',
-  './assets/pfsp-verify-asset-guard.js',
-  './assets/pfsp-trust-portal.js',
-  './assets/pfsp-trust-certificate.js',
+  './assets/pfsp-admin-verify.js?v=14.4.0-enterprise-trust-suite',
+  './assets/pfsp-verify-final-page.js?v=14.4.0-enterprise-trust-suite',
+  './assets/pfsp-verify-final-main.js?v=14.4.0-enterprise-trust-suite',
+  './assets/pfsp-verify-final.css?v=14.4.0-enterprise-trust-suite',
+  './assets/pfsp-verify-asset-guard.js?v=14.4.0-enterprise-trust-suite',
+  './assets/pfsp-trust-portal.js?v=14.4.0-enterprise-trust-suite',
+  './assets/pfsp-trust-certificate.js?v=14.4.0-enterprise-trust-suite',
   './admin-verify.html',
   './404.html',
   './assets/pfsp-upgrade.css',
   './assets/pfsp-enhancements.js',
+  './assets/pfsp-watermark-placement-fix.js?v=14.4.1-watermark-hotfix',
   './assets/pfsp-pro-ui.css',
   './assets/pfsp-compress-seo.js',
   './compress-pdf.html',
@@ -40,8 +41,8 @@ const APP_SHELL = [
   './assets/pfsp-advanced-suite.js',
   './assets/pfsp-worker.js',
   './document-hash-verify.html',
-  './assets/pfsp-document-hash-verify.js',
-  './assets/pfsp-trusted-verify-registry.js',
+  './assets/pfsp-document-hash-verify.js?v=14.4.0-enterprise-trust-suite',
+  './assets/pfsp-trusted-verify-registry.js?v=14.4.0-enterprise-trust-suite',
   './assets/pfsp-verify-registry-page.js',
   './data/verify-registry.json',
   'https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js',
@@ -113,8 +114,18 @@ async function networkFirst(request) {
     }
     return response;
   } catch (err) {
-    return (await caches.match(request)) || (await caches.match('./index.html')) || (await caches.match(OFFLINE_URL));
+    return (await caches.match(request))
+      || (await caches.match('./index.html'))
+      || (await caches.match(OFFLINE_URL))
+      || new Response('Offline.', {status: 503, headers: {'Content-Type':'text/plain; charset=utf-8'}});
   }
+}
+
+function offlineAssetResponse() {
+  return new Response('Offline and resource is not cached.', {
+    status: 503,
+    headers: {'Content-Type':'text/plain; charset=utf-8'}
+  });
 }
 
 self.addEventListener('fetch', event => {
@@ -130,8 +141,8 @@ self.addEventListener('fetch', event => {
     return;
   }
   if (url.origin === self.location.origin) {
-    event.respondWith(cacheFirst(request).catch(async () => (await caches.match(request)) || (await caches.match(OFFLINE_URL)) || new Response('Offline.', {status: 503, headers: {'Content-Type':'text/plain; charset=utf-8'}})));
+    event.respondWith(cacheFirst(request).catch(async () => (await caches.match(request)) || offlineAssetResponse()));
     return;
   }
-  event.respondWith(cacheFirst(request).catch(async () => (await caches.match(request)) || new Response('Offline and resource is not cached.', {status: 503, headers: {'Content-Type':'text/plain; charset=utf-8'}})));
+  event.respondWith(cacheFirst(request).catch(async () => (await caches.match(request)) || offlineAssetResponse()));
 });
