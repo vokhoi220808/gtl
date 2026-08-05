@@ -1,6 +1,6 @@
 (() => {
   'use strict';
-  const VERSION = '4.1.0-upgraded';
+  const VERSION = '4.1.1-watermark-hotfix';
   const $ = (id) => document.getElementById(id);
   const ready = (fn) => document.readyState === 'loading' ? document.addEventListener('DOMContentLoaded', fn, {once:true}) : fn();
   const fmtBytes = (n) => {
@@ -9,6 +9,15 @@
     while (n >= 1024 && i < units.length - 1) { n /= 1024; i++; }
     return `${n.toFixed(n >= 10 || i === 0 ? 0 : 1)} ${units[i]}`;
   };
+  function loadWatermarkPlacementFix() {
+    if (window.PFSPWatermarkPlacement || document.querySelector('script[data-pfsp-watermark-fix]')) return;
+    const script = document.createElement('script');
+    script.src = './assets/pfsp-watermark-placement-fix.js?v=14.4.1-watermark-hotfix';
+    script.async = false;
+    script.dataset.pfspWatermarkFix = 'true';
+    script.onerror = () => console.warn('[PFSP] Không thể tải watermark placement hotfix.');
+    document.head.appendChild(script);
+  }
   function toast(msg) {
     let el = document.querySelector('.pfsp-toast');
     if (!el) { el = document.createElement('div'); el.className = 'pfsp-toast'; document.body.appendChild(el); }
@@ -145,6 +154,7 @@
     });
   }
   ready(() => {
+    loadWatermarkPlacementFix();
     document.documentElement.dataset.pfspVersion = VERSION;
     addPills(); addUpgradePanel(); pwaInstallHook();
     document.addEventListener('keydown', keyboardShortcuts);
