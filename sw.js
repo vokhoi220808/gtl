@@ -1,4 +1,4 @@
-const VERSION = '14.4.0-enterprise-trust-suite';
+const VERSION = '14.4.1-watermark-hotfix';
 const CACHE_NAME = `pdf-fusion-${VERSION}`;
 const OFFLINE_URL = './offline.html';
 const APP_SHELL = [
@@ -25,6 +25,7 @@ const APP_SHELL = [
   './404.html',
   './assets/pfsp-upgrade.css',
   './assets/pfsp-enhancements.js',
+  './assets/pfsp-watermark-placement-fix.js?v=14.4.1-watermark-hotfix',
   './assets/pfsp-pro-ui.css',
   './assets/pfsp-compress-seo.js',
   './compress-pdf.html',
@@ -113,8 +114,18 @@ async function networkFirst(request) {
     }
     return response;
   } catch (err) {
-    return (await caches.match(request)) || (await caches.match('./index.html')) || (await caches.match(OFFLINE_URL));
+    return (await caches.match(request))
+      || (await caches.match('./index.html'))
+      || (await caches.match(OFFLINE_URL))
+      || new Response('Offline.', {status: 503, headers: {'Content-Type':'text/plain; charset=utf-8'}});
   }
+}
+
+function offlineAssetResponse() {
+  return new Response('Offline and resource is not cached.', {
+    status: 503,
+    headers: {'Content-Type':'text/plain; charset=utf-8'}
+  });
 }
 
 self.addEventListener('fetch', event => {
@@ -130,8 +141,8 @@ self.addEventListener('fetch', event => {
     return;
   }
   if (url.origin === self.location.origin) {
-    event.respondWith(cacheFirst(request).catch(async () => (await caches.match(request)) || (await caches.match(OFFLINE_URL)) || new Response('Offline.', {status: 503, headers: {'Content-Type':'text/plain; charset=utf-8'}})));
+    event.respondWith(cacheFirst(request).catch(async () => (await caches.match(request)) || offlineAssetResponse()));
     return;
   }
-  event.respondWith(cacheFirst(request).catch(async () => (await caches.match(request)) || new Response('Offline and resource is not cached.', {status: 503, headers: {'Content-Type':'text/plain; charset=utf-8'}})));
+  event.respondWith(cacheFirst(request).catch(async () => (await caches.match(request)) || offlineAssetResponse()));
 });
