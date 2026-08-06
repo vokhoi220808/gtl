@@ -26,5 +26,7 @@ jobs:
         run: npm run predeploy-check
       - name: Run Verify System E2E smoke test
         run: npm run verify:e2e
+      - name: Run Verify business integrity tests
+        run: npm run test:verify-business
       - name: Run watermark placement regression tests
         run: npm run test:watermark

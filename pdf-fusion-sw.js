@@ -1,4 +1,4 @@
-const VERSION = '14.4.1-watermark-hotfix';
+const VERSION = '15.0.0-business-integrity';
 const CACHE_NAME = `pdf-fusion-${VERSION}`;
 const OFFLINE_URL = './offline.html';
 const APP_SHELL = [
@@ -14,18 +14,21 @@ const APP_SHELL = [
   './verify-registry.html',
   './trust-portal.html',
   './verify-certificate.html',
+  './admin-verify.html',
+  './404.html',
   './assets/pfsp-admin-verify.js?v=14.4.0-enterprise-trust-suite',
   './assets/pfsp-verify-final-page.js?v=14.4.0-enterprise-trust-suite',
   './assets/pfsp-verify-final-main.js?v=14.4.0-enterprise-trust-suite',
   './assets/pfsp-verify-final.css?v=14.4.0-enterprise-trust-suite',
   './assets/pfsp-verify-asset-guard.js?v=14.4.0-enterprise-trust-suite',
+  './assets/pfsp-verify-asset-guard.js?v=15.0.0-business-integrity',
+  './assets/pfsp-verify-asset-guard-v14.js?v=15.0.0-business-integrity',
+  './assets/pfsp-verify-business-ui.js?v=15.0.0-business-integrity',
   './assets/pfsp-trust-portal.js?v=14.4.0-enterprise-trust-suite',
   './assets/pfsp-trust-certificate.js?v=14.4.0-enterprise-trust-suite',
-  './admin-verify.html',
-  './404.html',
   './assets/pfsp-upgrade.css',
   './assets/pfsp-enhancements.js',
-  './assets/pfsp-watermark-placement-fix.js?v=14.4.1-watermark-hotfix',
+  './assets/pfsp-watermark-placement-fix.js?v=15.0.0-business-integrity',
   './assets/pfsp-pro-ui.css',
   './assets/pfsp-compress-seo.js',
   './compress-pdf.html',

@@ -1,100 +1,42 @@
 #!/usr/bin/env node
-/* PDF Fusion Verify System v14 E2E smoke tests - no external dependencies. */
 const { EventEmitter } = require('events');
 const fs = require('fs');
 const path = require('path');
-
-process.env.PFSP_VERIFY_SIGNING_SECRET = process.env.PFSP_VERIFY_SIGNING_SECRET || 'local-e2e-signing-secret-change-me';
-process.env.PFSP_VERIFY_ADMIN_SECRET = process.env.PFSP_VERIFY_ADMIN_SECRET || 'local-e2e-admin-secret-change-me';
+process.env.NODE_ENV = 'test';
+process.env.PFSP_VERIFY_SIGNING_SECRET = 'e2e-signing-secret';
+process.env.PFSP_VERIFY_ADMIN_SECRET = 'e2e-admin-secret';
 process.env.PFSP_ALLOW_LOCAL_REGISTRY_WRITE = 'true';
-process.env.PFSP_VERIFY_ALLOWED_ORIGINS = process.env.PFSP_VERIFY_ALLOWED_ORIGINS || 'https://example.test';
-process.env.PFSP_PUBLIC_BASE_URL = process.env.PFSP_PUBLIC_BASE_URL || 'https://example.test';
-
+process.env.PFSP_VERIFY_ALLOWED_ORIGINS = 'https://example.test';
+process.env.PFSP_PUBLIC_BASE_URL = 'https://example.test';
+process.env.PFSP_VERIFY_PUBLIC_RATE_LIMIT = '10000';
+process.env.PFSP_VERIFY_ADMIN_RATE_LIMIT = '10000';
 const handler = require('../api/verify.js');
-const registryPath = path.join(process.cwd(), 'data', 'verify-registry.json');
-const originalRegistry = fs.existsSync(registryPath) ? fs.readFileSync(registryPath, 'utf8') : '';
-
-function makeReq(method, url, body, headers = {}) {
-  const req = new EventEmitter();
-  req.method = method;
-  req.url = url;
-  req.headers = { origin: 'https://example.test', 'user-agent': 'pfsp-e2e', ...headers };
-  req.socket = { remoteAddress: '127.0.0.1' };
-  process.nextTick(() => {
-    if (body != null) req.emit('data', Buffer.from(JSON.stringify(body)));
-    req.emit('end');
-  });
-  return req;
-}
+const file = path.join(process.cwd(), 'data', 'verify-registry.json');
+const original = fs.readFileSync(file, 'utf8');
 function call(method, url, body, headers = {}) {
   return new Promise(resolve => {
-    const req = makeReq(method, url, body, headers);
-    const res = {
-      headers: {},
-      setHeader(k, v) { this.headers[k] = v; },
-      end(text) { resolve({ statusCode: this.statusCode || 200, headers: this.headers, body: JSON.parse(text || '{}') }); },
-      set statusCode(v) { this._status = v; },
-      get statusCode() { return this._status || 200; }
-    };
-    handler(req, res);
+    const req = new EventEmitter();
+    req.method = method; req.url = url;
+    req.headers = { origin: 'https://example.test', 'user-agent': 'e2e', ...(body ? {'content-type':'application/json'} : {}), ...headers };
+    req.socket = { remoteAddress: '127.0.0.1' };
+    const res = { headers:{}, setHeader(k,v){this.headers[k]=v;}, set statusCode(v){this._s=v;}, get statusCode(){return this._s||200;}, end(text){resolve({status:this.statusCode, body:JSON.parse(text||'{}')});} };
+    handler(req,res);
+    process.nextTick(() => { if (body) req.emit('data', Buffer.from(JSON.stringify(body))); req.emit('end'); });
   });
 }
-function assert(ok, message, detail) {
-  if (!ok) {
-    console.error('FAIL:', message);
-    if (detail) console.error(JSON.stringify(detail, null, 2));
-    process.exitCode = 1;
-    throw new Error(message);
-  }
-  console.log('PASS:', message);
-}
+function ok(value, message, detail) { if (!value) throw new Error(message + '\n' + JSON.stringify(detail || {}, null, 2)); console.log('PASS:', message); }
 (async () => {
   try {
-    const health = await call('GET', '/api/verify?action=health');
-    assert(health.body.ok && health.body.env.apiVersion.includes('14.4.0'), 'health endpoint reports v14');
-
-    const gen = await call('GET', '/api/verify?action=generate-id');
-    assert(/^PFSP-/.test(gen.body.id || ''), 'generate-id returns PFSP ID', gen.body);
-
-    const sha = 'a'.repeat(64);
-    const register = await call('POST', '/api/verify', {
-      action: 'register',
-      adminSecret: process.env.PFSP_VERIFY_ADMIN_SECRET,
-      id: gen.body.id,
-      sha256: sha,
-      fileName: 'enterprise-document.pdf',
-      size: 12345,
-      origin: 'https://example.test',
-      documentInfo: {
-        title: 'Enterprise E2E Document',
-        documentType: 'Test Certificate',
-        documentNumber: 'E2E-001',
-        customFields: [{ label: 'Workflow', value: 'Automated smoke test' }]
-      },
-      userInfo: { fullName: 'E2E User', organization: 'PDF Fusion Lab', role: 'Tester' },
-      extraInfo: { workflow: 'Approved' }
-    });
-    assert(['REGISTERED', 'MANUAL_REGISTRY_PATCH_REQUIRED'].includes(register.body.verdict), 'register accepts Document Information', register.body);
-    assert(register.body.record?.documentInfo?.title === 'Enterprise E2E Document', 'record keeps documentInfo.title', register.body.record);
-    assert(register.body.record?.userInfo?.fullName === 'E2E User', 'record keeps userInfo.fullName', register.body.record);
-
-    const verify = await call('GET', `/api/verify?id=${encodeURIComponent(gen.body.id)}&sha256=${sha}&size=12345`);
-    assert(verify.body.verdict === 'GENUINE', 'verify confirms ID + SHA-256', verify.body);
-    assert(verify.body.record?.documentInfo?.documentNumber === 'E2E-001', 'verify returns full Document Information', verify.body.record);
-
-    const cert = await call('GET', `/api/verify?action=printable-certificate&id=${encodeURIComponent(gen.body.id)}`);
-    assert(cert.body.certificate?.documentInfo?.title === 'Enterprise E2E Document', 'printable certificate includes Document Information', cert.body.certificate);
-
-    const analytics = await call('POST', '/api/verify', { action: 'analytics', adminSecret: process.env.PFSP_VERIFY_ADMIN_SECRET });
-    assert(analytics.body.verdict === 'ANALYTICS', 'admin analytics endpoint works', analytics.body);
-
-    const bulk = await call('POST', '/api/verify', { action: 'bulk-action', operation: 'suspend', ids: [gen.body.id], dryRun: true, adminSecret: process.env.PFSP_VERIFY_ADMIN_SECRET });
-    assert(bulk.body.verdict === 'BULK_ACTION_DRY_RUN', 'bulk-action dry run works', bulk.body);
-  } finally {
-    if (originalRegistry) fs.writeFileSync(registryPath, originalRegistry, 'utf8');
-  }
-})().catch(err => {
-  if (originalRegistry) fs.writeFileSync(registryPath, originalRegistry, 'utf8');
-  console.error(err.stack || err.message || err);
-  process.exit(1);
-});
+    let r = await call('GET','/api/verify?action=health');
+    ok(r.body.env.apiVersion === '15.0.0-business-integrity','health reports v15',r.body);
+    r = await call('GET','/api/verify?action=generate-id'); const id = r.body.id; const hash = 'a'.repeat(64);
+    r = await call('POST','/api/verify',{action:'register',id,sha256:hash,size:123,fileName:'e2e.pdf',documentInfo:{title:'E2E'},userInfo:{fullName:'Tester',email:'private@example.test'}},{'x-verify-admin-secret':'e2e-admin-secret','idempotency-key':'e2e-'+id});
+    ok(r.body.verdict === 'REGISTERED','register works',r.body); const revision = r.body.record.revision;
+    r = await call('GET',`/api/verify?id=${encodeURIComponent(id)}&sha256=${hash}&size=123`);
+    ok(r.body.verdict === 'GENUINE','verify works',r.body); ok(!r.body.record.userInfo.email,'public PII is redacted',r.body.record);
+    r = await call('POST','/api/verify',{action:'metadata',id,expectedRevision:revision,policy:{visibility:'private'}},{'x-verify-admin-secret':'e2e-admin-secret'});
+    ok(r.body.verdict === 'METADATA_UPDATED','metadata concurrency works',r.body);
+    r = await call('GET',`/api/verify?id=${encodeURIComponent(id)}&sha256=${hash}`);
+    ok(r.status === 404 && r.body.verdict === 'UNKNOWN','private record is hidden',r.body);
+  } finally { fs.writeFileSync(file, original, 'utf8'); }
+})().catch(error => { fs.writeFileSync(file, original, 'utf8'); console.error(error.stack || error); process.exit(1); });
