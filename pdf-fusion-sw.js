@@ -1,5 +1,5 @@
 const VERSION = '15.0.0-business-integrity';
-const CACHE_NAME = `pdf-fusion-${VERSION}`;
+const CACHE_NAME = `pdf-fusion-${VERSION}-ui-layout-1`;
 const OFFLINE_URL = './offline.html';
 const APP_SHELL = [
   './',
@@ -24,6 +24,8 @@ const APP_SHELL = [
   './assets/pfsp-verify-asset-guard.js?v=15.0.0-business-integrity',
   './assets/pfsp-verify-asset-guard-v14.js?v=15.0.0-business-integrity',
   './assets/pfsp-verify-business-ui.js?v=15.0.0-business-integrity',
+  './assets/pfsp-verify-layout.js?v=15.0.0-business-integrity',
+  './assets/pfsp-verify-layout.css?v=15.0.0-business-integrity',
   './assets/pfsp-trust-portal.js?v=14.4.0-enterprise-trust-suite',
   './assets/pfsp-trust-certificate.js?v=14.4.0-enterprise-trust-suite',
   './assets/pfsp-upgrade.css',
@@ -136,7 +138,7 @@ self.addEventListener('fetch', event => {
   if (request.method !== 'GET') return;
   const url = new URL(request.url);
   if (url.pathname.startsWith('/api/')) {
-    event.respondWith(fetch(request).catch(() => new Response(JSON.stringify({ok:false,verdict:'OFFLINE',message:'Verify registry API is offline.'}), {status: 503, headers: {'Content-Type':'application/json; charset=utf-8'}})));
+    event.respondWith(fetch(request).catch(() => new Response(JSON.stringify({ok:false,verdict:'OFFLINE',message:'Verify registry API is offline.'}), {status: 503, headers:{'Content-Type':'application/json; charset=utf-8'}})));
     return;
   }
   if (request.mode === 'navigate') {
