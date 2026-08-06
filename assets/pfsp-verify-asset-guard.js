@@ -13,5 +13,6 @@
     document.head.appendChild(script);
   }
   load('pfsp-verify-asset-guard-v14.js', 'pfspLegacyAssetGuard');
+  load('pfsp-verify-layout.js', 'pfspVerifyLayout');
   if (/\/admin-verify\.html$/i.test(location.pathname)) load('pfsp-verify-business-ui.js', 'pfspBusinessUi');
 })();
