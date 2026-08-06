@@ -2,7 +2,7 @@
   "name": "pdf-fusion-smart-pro",
   "version": "15.0.0-business-integrity",
   "private": true,
-  "description": "Browser-first PDF toolkit with Verify System v15 Business Integrity: state-machine lifecycle, privacy policy, optimistic concurrency, idempotency, CAS storage, key rotation, Trust Portal and enterprise diagnostics.",
+  "description": "Browser-first PDF toolkit with Verify System v15 Business Integrity: state-machine lifecycle, privacy policy, optimistic concurrency, idempotency, CAS storage, key rotation, Trust Portal and an organized responsive Verify workspace.",
   "scripts": {
     "start": "python -m http.server 5500",
     "serve": "python -m http.server 5500",
@@ -10,7 +10,7 @@
     "check:assets": "find assets -maxdepth 1 -name '*.js' -print0 | xargs -0 -n1 node --check",
     "check:js": "npm run check:api && npm run check:assets && npm run check:portal",
     "verify:health:local": "node -e \"const h=require('./api/verify.js'); const req={method:'GET',url:'/api/verify?action=health',headers:{},socket:{}}; const res={setHeader(){},end(x){console.log(x)},set statusCode(v){this._s=v},get statusCode(){return this._s}}; h(req,res)\"",
-    "check:portal": "node --check assets/pfsp-trust-portal.js && node --check assets/pfsp-trust-certificate.js && node --check assets/pfsp-verify-asset-guard.js && node --check assets/pfsp-verify-business-ui.js",
+    "check:portal": "node --check assets/pfsp-trust-portal.js && node --check assets/pfsp-trust-certificate.js && node --check assets/pfsp-verify-asset-guard.js && node --check assets/pfsp-verify-business-ui.js && node --check assets/pfsp-verify-layout.js",
     "check:pwa": "node scripts/pwa-integrity-check.js",
     "predeploy-check": "node scripts/predeploy-check.js",
     "verify:e2e": "node tests/verify-system-e2e.js",
@@ -18,6 +18,6 @@
     "test:watermark": "node tests/watermark-placement.test.js",
     "test": "npm run check:js && npm run check:pwa && npm run predeploy-check && npm run verify:e2e && npm run test:verify-business && npm run test:watermark"
   },
-  "keywords": ["pdf","pwa","ocr","watermark","signature","verify","sha256","serverless","trusted-registry","state-machine","optimistic-concurrency","idempotency","privacy-policy","cas-storage","key-rotation","redis","github","trust-portal","analytics","e2e"],
+  "keywords": ["pdf","pwa","ocr","watermark","signature","verify","sha256","serverless","trusted-registry","state-machine","optimistic-concurrency","idempotency","privacy-policy","cas-storage","key-rotation","redis","github","trust-portal","responsive-workspace","analytics","e2e"],
   "license": "MIT"
 }
